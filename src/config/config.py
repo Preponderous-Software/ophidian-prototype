@@ -10,11 +10,11 @@ class Config:
         self.displayWidth = 500
         self.displayHeight = 500
         self.fullscreen = False
-        self.black = (0,0,0)
-        self.white = (255,255,255)
-        self.green = (0,255,0)
-        self.red = (255,0,0)
-        self.yellow = (255,255,0)
+        self.black = (0, 0, 0)
+        self.white = (255, 255, 255)
+        self.green = (0, 255, 0)
+        self.red = (255, 0, 0)
+        self.yellow = (255, 255, 0)
         self.textSize = 50
 
         # grid size

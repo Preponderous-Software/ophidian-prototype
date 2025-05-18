@@ -7,6 +7,6 @@ class Food(Entity):
     def __init__(self, color):
         Entity.__init__(self, "Food")
         self.color = color
-    
+
     def getColor(self):
         return self.color

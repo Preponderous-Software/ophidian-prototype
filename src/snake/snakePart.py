@@ -11,19 +11,19 @@ class SnakePart(Entity):
         self.nextSnakePart = -1
         self.previousSnakePart = -1
         self.lastPosition = -1
-    
+
     def getDirection(self):
         return self.direction
-    
+
     def setDirection(self, direction):
         self.direction = direction
-    
+
     def setNext(self, snakePart):
         self.nextSnakePart = snakePart
-    
+
     def setPrevious(self, snakePart):
         self.previousSnakePart = snakePart
-    
+
     def setLastPosition(self, position):
         self.lastPosition = position
 
@@ -32,7 +32,7 @@ class SnakePart(Entity):
 
     def hasPrevious(self):
         return self.previousSnakePart != -1
-    
+
     def getTail(self):
         if self.previousSnakePart == -1:
             return self
@@ -40,6 +40,6 @@ class SnakePart(Entity):
         while temp.hasPrevious():
             temp = temp.previousSnakePart
         return temp
-    
+
     def getColor(self):
         return self.color
