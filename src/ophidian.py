@@ -10,6 +10,14 @@ from food.food import Food
 from lib.graphik.src.graphik import Graphik
 from snake.snakePart import SnakePart
 
+from Viron.src.main.python.preponderous.viron.services.entityService import EntityService
+from Viron.src.main.python.preponderous.viron.services.environmentService import EnvironmentService
+from Viron.src.main.python.preponderous.viron.services.gridService import GridService
+from Viron.src.main.python.preponderous.viron.services.locationService import LocationService
+
+from src.lib.patchwork.environmentRenderer import EnvironmentRenderer
+from src.lib.patchwork.gridRenderer import GridRenderer
+from src.lib.patchwork.locationRenderer import LocationRenderer
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
@@ -337,6 +345,7 @@ class Ophidian:
         self.score = 0
         self.snakeParts = []
         self.tick = 0
+        
         if self.level == 1:
             self.environment = Environment(
                 "Level " + str(self.level), self.config.gridSize
