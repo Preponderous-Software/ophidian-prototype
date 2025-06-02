@@ -1,3 +1,6 @@
 [submodule "Viron"]
 	path = Viron
 	url = https://www.github.com/Preponderous-Software/Viron
+[submodule "src/Viron"]
+	path = src/Viron
+	url = https://www.github.com/Preponderous-Software/Viron
