@@ -1,7 +1,7 @@
 import random
 
 from Viron.src.main.python.preponderous.viron.models.location import Location
-from graphik import Graphik
+from src.lib.graphik import Graphik
 
 
 class LocationRenderer:
