@@ -1,8 +1,11 @@
-from lib.pyenvlib.entity import Entity
+
 
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
+from Viron.src.main.python.preponderous.viron.models.entity import Entity
+
+
 class SnakePart(Entity):
     def __init__(self, color):
         Entity.__init__(self, "Snake Part")

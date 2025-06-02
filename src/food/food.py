@@ -1,4 +1,4 @@
-from lib.pyenvlib.entity import Entity
+from Viron.src.main.python.preponderous.viron.models.entity import Entity
 
 
 # @author Daniel McCoy Stephenson

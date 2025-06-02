@@ -1,13 +1,13 @@
 import random
 import time
 import pygame
+from Viron.src.main.python.preponderous.viron.models.entity import Entity
+from Viron.src.main.python.preponderous.viron.models.environment import Environment
+from Viron.src.main.python.preponderous.viron.models.grid import Grid
+from Viron.src.main.python.preponderous.viron.models.location import Location
 from config.config import Config
-from lib.pyenvlib.entity import Entity
-from lib.pyenvlib.environment import Environment
 from food.food import Food
 from lib.graphik.src.graphik import Graphik
-from lib.pyenvlib.grid import Grid
-from lib.pyenvlib.location import Location
 from snake.snakePart import SnakePart
 
 
