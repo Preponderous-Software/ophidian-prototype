@@ -1,7 +1,7 @@
 from Viron.src.main.python.preponderous.viron.models.grid import Grid
 from Viron.src.main.python.preponderous.viron.services.locationService import LocationService
-from src.lib.graphik import Graphik
-from locationRenderer import LocationRenderer
+from lib.graphik.src.graphik import Graphik
+from lib.patchwork.locationRenderer import LocationRenderer
 
 
 class GridRenderer:

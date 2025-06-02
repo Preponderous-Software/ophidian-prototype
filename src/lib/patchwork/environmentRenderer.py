@@ -1,7 +1,7 @@
 from Viron.src.main.python.preponderous.viron.models.environment import Environment
 from Viron.src.main.python.preponderous.viron.services.gridService import GridService
-from src.lib.graphik import Graphik
-from gridRenderer import GridRenderer
+from lib.graphik.src.graphik import Graphik
+from lib.patchwork.gridRenderer import GridRenderer
 
 
 class EnvironmentRenderer:

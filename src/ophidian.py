@@ -15,9 +15,9 @@ from Viron.src.main.python.preponderous.viron.services.environmentService import
 from Viron.src.main.python.preponderous.viron.services.gridService import GridService
 from Viron.src.main.python.preponderous.viron.services.locationService import LocationService
 
-from src.lib.patchwork.environmentRenderer import EnvironmentRenderer
-from src.lib.patchwork.gridRenderer import GridRenderer
-from src.lib.patchwork.locationRenderer import LocationRenderer
+from lib.patchwork.environmentRenderer import EnvironmentRenderer
+from lib.patchwork.gridRenderer import GridRenderer
+from lib.patchwork.locationRenderer import LocationRenderer
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
