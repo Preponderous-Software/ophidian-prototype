@@ -31,11 +31,23 @@ class Ophidian:
         self.running = True
         self.snakeParts = []
         self.level = 1
-        self.initialize()
+        
         self.tick = 0
         self.score = 0
         self.changedDirectionThisTick = False
         self.collision = False
+        
+        self.url = "http://localhost"
+        self.port = "9999"
+        
+        self.entityService = EntityService(self.url, self.port)
+        self.environmentService = EnvironmentService(self.url, self.port)
+        self.gridService = GridService(self.url, self.port)
+        self.locationService = LocationService(self.url, self.port)
+        
+        self.initialize()
+        
+        self.environmentRenderer = EnvironmentRenderer(self.graphik, self.url, self.port)
 
     def initializeGameDisplay(self):
         if self.config.fullscreen:
@@ -47,22 +59,14 @@ class Ophidian:
                 (self.config.displayWidth, self.config.displayHeight), pygame.RESIZABLE
             )
 
-    def initializeLocationWidthAndHeight(self):
+    def initializeLocationWidthAndHeight(self, gridSize):
         x, y = self.gameDisplay.get_size()
-        self.locationWidth = x / self.environment.getGrid().getRows()
-        self.locationHeight = y / self.environment.getGrid().getColumns()
+        self.locationWidth = x / gridSize
+        self.locationHeight = y / gridSize
 
     # Draws the environment in its entirety.
     def drawEnvironment(self):
-        for locationId in self.environment.getGrid().getLocations():
-            location = self.environment.getGrid().getLocation(locationId)
-            self.drawLocation(
-                location,
-                location.getX() * self.locationWidth - 1,
-                location.getY() * self.locationHeight - 1,
-                self.locationWidth + 2,
-                self.locationHeight + 2,
-            )
+        self.environmentRenderer.draw(self.environment)
 
     # Returns the color that a location should be displayed as.
     def getColorOfLocation(self, location):
@@ -347,14 +351,11 @@ class Ophidian:
         self.tick = 0
         
         if self.level == 1:
-            self.environment = Environment(
-                "Level " + str(self.level), self.config.gridSize
-            )
+            self.environment = self.environmentService.create_environment("Level " + str(self.level), 1, self.config.gridSize)
         else:
-            self.environment = Environment(
-                "Level " + str(self.level), self.config.gridSize + (self.level - 1) * 2
-            )
-        self.initializeLocationWidthAndHeight()
+            self.environment = self.environmentService.create_environment("Level " + str(self.level), 1, self.config.gridSize + (self.level - 1) * 2)
+        
+        self.initializeLocationWidthAndHeight(self.config.gridSize)
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selectedSnakePart = SnakePart(
             (
@@ -363,7 +364,10 @@ class Ophidian:
                 random.randrange(50, 200),
             )
         )
-        self.environment.addEntity(self.selectedSnakePart)
+        entity = self.entityService.create_entity(self.selectedSnakePart.getName())
+        entityId = entity.getEntityId()
+        locationId = self.locationService.get_all_locations()[0].get_location_id()
+        self.locationService.add_entity_to_location(entityId, locationId)
         self.snakeParts.append(self.selectedSnakePart)
         print("The ophidian enters the world.")
         self.spawnFood()
