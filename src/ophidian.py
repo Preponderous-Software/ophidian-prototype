@@ -5,11 +5,10 @@ import pygame
 
 from config.config import Config
 from environment.environmentRepository import EnvironmentRepository
+from graphics.renderer import Renderer
 from input.keyDownEventHandler import KeyDownEventHandler
-from lib.graphik.src.graphik import Graphik
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
-from graphics.renderer import Renderer
 
 
 # @author Daniel McCoy Stephenson
@@ -17,30 +16,20 @@ from graphics.renderer import Renderer
 class Ophidian:
     def __init__(self):
         pygame.init()
-        self.config = Config()
-        self.initialize_game_display()
         pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
-        self.graphik = Graphik(self.game_display)
+
         self.running = True
-        self.snake_part_repository = SnakePartRepository()
         self.level = 1
-        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
         self.tick = 0
         self.score = 0
         self.changed_direction_this_tick = False
         self.collision = False
-        self.renderer = Renderer(self.graphik, self.collision, self.config, self.environment_repository,self.snake_part_repository)
-        self.initialize()
 
-    def initialize_game_display(self):
-        if self.config.fullscreen:
-            self.game_display = pygame.display.set_mode(
-                (self.config.display_width, self.config.display_height), pygame.FULLSCREEN
-            )
-        else:
-            self.game_display = pygame.display.set_mode(
-                (self.config.display_width, self.config.display_height), pygame.RESIZABLE
-            )
+        self.config = Config()
+        self.snake_part_repository = SnakePartRepository()
+        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
+        self.renderer = Renderer(self.collision, self.config, self.environment_repository,self.snake_part_repository)
+        self.initialize()
 
     def calculate_score(self):
         length = self.snake_part_repository.get_length()
@@ -80,7 +69,7 @@ class Ophidian:
 
     def handle_key_down_event(self, key):
         key_down_event_handler = KeyDownEventHandler(
-            self.config, self.game_display, self.selected_snake_part
+            self.config, self.renderer.graphik.gameDisplay, self.selected_snake_part
         )
         result = key_down_event_handler.handle_key_down_event(key)
         if result == "quit":

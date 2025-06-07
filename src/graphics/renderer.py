@@ -1,14 +1,27 @@
 import pygame
 
+from lib.graphik.src.graphik import Graphik
+
 
 class Renderer:
 
-    def __init__(self, graphik, collision, config, environment_repository, snake_part_repository):
-        self.graphik = graphik
+    def __init__(self, collision, config, environment_repository, snake_part_repository):
         self.collision = collision
         self.config = config
         self.environment_repository = environment_repository
         self.snake_part_repository = snake_part_repository
+        self.initialize_game_display()
+        self.graphik = Graphik(self.game_display)
+
+    def initialize_game_display(self):
+        if self.config.fullscreen:
+            self.game_display = pygame.display.set_mode(
+                (self.config.display_width, self.config.display_height), pygame.FULLSCREEN
+            )
+        else:
+            self.game_display = pygame.display.set_mode(
+                (self.config.display_width, self.config.display_height), pygame.RESIZABLE
+            )
 
     def draw(self):
         self.graphik.getGameDisplay().fill(self.config.white)
