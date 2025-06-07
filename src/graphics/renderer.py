@@ -1,10 +1,19 @@
+import pygame
+
+
 class Renderer:
 
-    def __init__(self, graphik, collision, config, environment_repository):
+    def __init__(self, graphik, collision, config, environment_repository, snake_part_repository):
         self.graphik = graphik
         self.collision = collision
         self.config = config
         self.environment_repository = environment_repository
+        self.snake_part_repository = snake_part_repository
+
+    def draw(self):
+        self.graphik.getGameDisplay().fill(self.config.white)
+        self.draw_environment()
+        self.draw_progress_bar()
 
     def initialize_location_width_and_height(self):
         x, y = self.graphik.getGameDisplay().get_size()
@@ -42,3 +51,23 @@ class Renderer:
                 top_entity = location.getEntity(top_entity_id)
                 return top_entity.getColor()
         return color
+
+    def draw_progress_bar(self):
+        x, y = self.graphik.getGameDisplay().get_size()
+        percentage = self.snake_part_repository.get_length() / self.environment_repository.get_num_locations()
+        pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20))
+        if percentage < self.config.level_progress_percentage_required / 2:
+            pygame.draw.rect(
+                self.graphik.getGameDisplay(), self.config.red, (0, y - 20, x * percentage, 20)
+            )
+        elif percentage < self.config.level_progress_percentage_required:
+            pygame.draw.rect(
+                self.graphik.getGameDisplay(),
+                self.config.yellow,
+                (0, y - 20, x * percentage, 20),
+            )
+        else:
+            pygame.draw.rect(
+                self.graphik.getGameDisplay(), self.config.green, (0, y - 20, x * percentage, 20)
+            )
+        pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20), 1)

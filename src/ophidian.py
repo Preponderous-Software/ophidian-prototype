@@ -29,7 +29,7 @@ class Ophidian:
         self.score = 0
         self.changed_direction_this_tick = False
         self.collision = False
-        self.renderer = Renderer(self.graphik, self.collision, self.config, self.environment_repository)
+        self.renderer = Renderer(self.graphik, self.collision, self.config, self.environment_repository,self.snake_part_repository)
         self.initialize()
 
     def initialize_game_display(self):
@@ -134,28 +134,7 @@ class Ophidian:
                 self.environment_repository.move_entity(self.selected_snake_part, 3, self.check_for_level_progress_and_reinitialize)
 
             self.calculate_score()
-            self.game_display.fill(self.config.white)
-            self.renderer.draw_environment()
-            x, y = self.game_display.get_size()
-
-            # draw progress bar
-            percentage = self.snake_part_repository.get_length() / self.environment_repository.get_num_locations()
-            pygame.draw.rect(self.game_display, self.config.black, (0, y - 20, x, 20))
-            if percentage < self.config.level_progress_percentage_required / 2:
-                pygame.draw.rect(
-                    self.game_display, self.config.red, (0, y - 20, x * percentage, 20)
-                )
-            elif percentage < self.config.level_progress_percentage_required:
-                pygame.draw.rect(
-                    self.game_display,
-                    self.config.yellow,
-                    (0, y - 20, x * percentage, 20),
-                )
-            else:
-                pygame.draw.rect(
-                    self.game_display, self.config.green, (0, y - 20, x * percentage, 20)
-                )
-            pygame.draw.rect(self.game_display, self.config.black, (0, y - 20, x, 20), 1)
+            self.renderer.draw()
 
             pygame.display.update()
 
