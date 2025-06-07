@@ -9,6 +9,7 @@ from lib.graphik.src.graphik import Graphik
 from lib.pyenvlib.grid import Grid
 from lib.pyenvlib.location import Location
 from snake.snakePart import SnakePart
+from snake.snakePartRepository import SnakePartRepository
 
 
 # @author Daniel McCoy Stephenson
@@ -21,7 +22,7 @@ class Ophidian:
         pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
         self.graphik = Graphik(self.gameDisplay)
         self.running = True
-        self.snakeParts = []
+        self.snakePartRepository = SnakePartRepository()
         self.level = 1
         self.initialize()
         self.tick = 0
@@ -77,13 +78,13 @@ class Ophidian:
         self.graphik.drawRectangle(xPos, yPos, width, height, color)
 
     def calculateScore(self):
-        length = len(self.snakeParts)
+        length = self.snakePartRepository.get_length()
         numLocations = len(self.environment.grid.getLocations())
         percentage = int(length / numLocations * 100)
         self.score = length * percentage
 
     def displayStatsInConsole(self):
-        length = len(self.snakeParts)
+        length = self.snakePartRepository.get_length()
         numLocations = len(self.environment.grid.getLocations())
         percentage = int(length / numLocations * 100)
         print(
@@ -98,7 +99,7 @@ class Ophidian:
 
     def checkForLevelProgressAndReinitialize(self):
         if (
-            len(self.snakeParts)
+            self.snakePartRepository.get_length()
             > len(self.environment.grid.getLocations())
             * self.config.levelProgressPercentageRequired
         ):
@@ -311,7 +312,7 @@ class Ophidian:
                 break
 
         self.environment.addEntityToLocation(newSnakePart, targetLocation)
-        self.snakeParts.append(newSnakePart)
+        self.snakePartRepository.append(newSnakePart)
 
     def spawnFood(self):
         food = Food(
@@ -335,7 +336,6 @@ class Ophidian:
     def initialize(self):
         self.collision = False
         self.score = 0
-        self.snakeParts = []
         self.tick = 0
         if self.level == 1:
             self.environment = Environment(
@@ -355,7 +355,7 @@ class Ophidian:
             )
         )
         self.environment.addEntity(self.selectedSnakePart)
-        self.snakeParts.append(self.selectedSnakePart)
+        self.snakePartRepository.append(self.selectedSnakePart)
         print("The ophidian enters the world.")
         self.spawnFood()
 
@@ -385,7 +385,7 @@ class Ophidian:
             x, y = self.gameDisplay.get_size()
 
             # draw progress bar
-            percentage = len(self.snakeParts) / len(
+            percentage = self.snakePartRepository.get_length() / len(
                 self.environment.grid.getLocations()
             )
             pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20))
