@@ -194,8 +194,8 @@ class EnvironmentRepository (object):
                 # we have a collision
                 self.collision = True
                 print("The ophidian collides with itself and ceases to be.")
-                time.sleep(self.config.tickSpeed * 20)
-                if self.config.restartUponCollision:
+                time.sleep(self.config.tick_speed * 20)
+                if self.config.restart_upon_collision:
                     check_for_level_progress_and_reinitialize()
                 else:
                     self.running = False
