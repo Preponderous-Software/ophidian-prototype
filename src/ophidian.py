@@ -1,15 +1,16 @@
 import random
 import time
+
 import pygame
 from config.config import Config
 from lib.pyenvlib.entity import Entity
-from lib.pyenvlib.environment import Environment
 from food.food import Food
 from lib.graphik.src.graphik import Graphik
 from lib.pyenvlib.grid import Grid
 from lib.pyenvlib.location import Location
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
+from environment.environmentRepository import EnvironmentRepository
 
 
 # @author Daniel McCoy Stephenson
@@ -24,6 +25,7 @@ class Ophidian:
         self.running = True
         self.snakePartRepository = SnakePartRepository()
         self.level = 1
+        self.environment_repository = EnvironmentRepository(self.level, self.config.gridSize)
         self.initialize()
         self.tick = 0
         self.score = 0
@@ -42,13 +44,13 @@ class Ophidian:
 
     def initializeLocationWidthAndHeight(self):
         x, y = self.gameDisplay.get_size()
-        self.locationWidth = x / self.environment.getGrid().getRows()
-        self.locationHeight = y / self.environment.getGrid().getColumns()
+        self.locationWidth = x / self.environment_repository.get_rows()
+        self.locationHeight = y / self.environment_repository.get_columns()
 
     # Draws the environment in its entirety.
     def drawEnvironment(self):
-        for locationId in self.environment.getGrid().getLocations():
-            location = self.environment.getGrid().getLocation(locationId)
+        for locationId in self.environment_repository.get_locations():
+            location = self.environment_repository.get_location_by_id(locationId)
             self.drawLocation(
                 location,
                 location.getX() * self.locationWidth - 1,
@@ -79,13 +81,13 @@ class Ophidian:
 
     def calculateScore(self):
         length = self.snakePartRepository.get_length()
-        numLocations = len(self.environment.grid.getLocations())
+        numLocations = self.environment_repository.get_num_locations()
         percentage = int(length / numLocations * 100)
         self.score = length * percentage
 
     def displayStatsInConsole(self):
         length = self.snakePartRepository.get_length()
-        numLocations = len(self.environment.grid.getLocations())
+        numLocations = self.environment_repository.get_num_locations()
         percentage = int(length / numLocations * 100)
         print(
             "The ophidian had a length of",
@@ -100,10 +102,12 @@ class Ophidian:
     def checkForLevelProgressAndReinitialize(self):
         if (
             self.snakePartRepository.get_length()
-            > len(self.environment.grid.getLocations())
+            > self.environment_repository.get_num_locations()
             * self.config.levelProgressPercentageRequired
         ):
             self.level += 1
+        self.environment_repository = EnvironmentRepository(self.level, self.config.gridSize)
+        self.snakePartRepository.clear()
         self.initialize()
 
     def quitApplication(self):
@@ -112,28 +116,21 @@ class Ophidian:
         quit()
 
     def getLocation(self, entity: Entity):
-        locationID = entity.getLocationID()
-        grid = self.environment.getGrid()
-        return grid.getLocation(locationID)
-
-    def getLocationAndGrid(self, entity: Entity):
-        locationID = entity.getLocationID()
-        grid = self.environment.getGrid()
-        return grid, grid.getLocation(locationID)
+        return self.environment_repository.get_location_of_entity(entity)
 
     def moveEntity(self, entity: Entity, direction):
-        grid, location = self.getLocationAndGrid(entity)
-
-        newLocation = -1
         # get new location
         if direction == 0:
-            newLocation = grid.getUp(location)
+            newLocation = self.environment_repository.get_location_above_entity(entity)
         elif direction == 1:
-            newLocation = grid.getLeft(location)
+            newLocation = self.environment_repository.get_location_left_of_entity(entity)
         elif direction == 2:
-            newLocation = grid.getDown(location)
+            newLocation = self.environment_repository.get_location_below_entity(entity)
         elif direction == 3:
-            newLocation = grid.getRight(location)
+            newLocation = self.environment_repository.get_location_right_of_entity(entity)
+        else:
+            print("Error: Invalid direction specified for entity movement.")
+            return
 
         if newLocation == -1:
             # location doesn't exist, we're at a border
@@ -156,7 +153,8 @@ class Ophidian:
                 return
 
         # move entity
-        location.removeEntity(entity)
+        location = self.getLocation(entity)
+        self.environment_repository.remove_entity_from_location(entity)
         newLocation.addEntity(entity)
         entity.lastPosition = location
 
@@ -301,17 +299,15 @@ class Ophidian:
         newSnakePart = SnakePart(color)
         snakePart.setPrevious(newSnakePart)
         newSnakePart.setNext(snakePart)
-        grid, location = self.getLocationAndGrid(snakePart)
 
-        targetLocation = -1
+        location = self.environment_repository.get_location_of_entity(snakePart)
         while True:
-            targetLocation = self.getRandomDirection(grid, location)
-            if targetLocation != -1 and targetLocation != self.getLocationDirection(
-                snakePart.getDirection(), grid, location
-            ):
+            targetLocation = self.environment_repository.get_location_in_random_direction(location)
+            location_in_current_direction_of_snake_part = self.environment_repository.get_location_in_direction_of_entity(snakePart.getDirection(), snakePart)
+            if targetLocation != -1 and targetLocation != location_in_current_direction_of_snake_part:
                 break
 
-        self.environment.addEntityToLocation(newSnakePart, targetLocation)
+        self.environment_repository.add_entity_to_location(newSnakePart, targetLocation)
         self.snakePartRepository.append(newSnakePart)
 
     def spawnFood(self):
@@ -327,24 +323,16 @@ class Ophidian:
         targetLocation = -1
         notFound = True
         while notFound:
-            targetLocation = self.environment.getGrid().getRandomLocation()
+            targetLocation = self.environment_repository.get_random_location()
             if targetLocation.getNumEntities() == 0:
                 notFound = False
 
-        self.environment.addEntity(food)
+        self.environment_repository.add_entity_to_location(food, targetLocation)
 
     def initialize(self):
         self.collision = False
         self.score = 0
         self.tick = 0
-        if self.level == 1:
-            self.environment = Environment(
-                "Level " + str(self.level), self.config.gridSize
-            )
-        else:
-            self.environment = Environment(
-                "Level " + str(self.level), self.config.gridSize + (self.level - 1) * 2
-            )
         self.initializeLocationWidthAndHeight()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selectedSnakePart = SnakePart(
@@ -354,7 +342,7 @@ class Ophidian:
                 random.randrange(50, 200),
             )
         )
-        self.environment.addEntity(self.selectedSnakePart)
+        self.environment_repository.add_entity_to_random_location(self.selectedSnakePart)
         self.snakePartRepository.append(self.selectedSnakePart)
         print("The ophidian enters the world.")
         self.spawnFood()
@@ -385,9 +373,7 @@ class Ophidian:
             x, y = self.gameDisplay.get_size()
 
             # draw progress bar
-            percentage = self.snakePartRepository.get_length() / len(
-                self.environment.grid.getLocations()
-            )
+            percentage = self.snakePartRepository.get_length() / self.environment_repository.get_num_locations()
             pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20))
             if percentage < self.config.levelProgressPercentageRequired / 2:
                 pygame.draw.rect(

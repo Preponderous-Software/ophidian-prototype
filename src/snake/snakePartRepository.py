@@ -7,3 +7,6 @@ class SnakePartRepository:
 
     def append(self, snake_part):
         self.snake_parts.append(snake_part)
+
+    def clear(self):
+        self.snake_parts.clear()
