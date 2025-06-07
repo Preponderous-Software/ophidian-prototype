@@ -224,11 +224,14 @@ class Ophidian:
         result = key_down_event_handler.handle_key_down_event(key)
         if result == "quit":
             self.quitApplication()
+            return None
         elif result == "restart":
             self.checkForLevelProgressAndReinitialize()
             return "restart"
         elif result == "initialize game display":
             self.initializeGameDisplay()
+            return None
+        return None
 
     def spawnSnakePart(self, snakePart: SnakePart, color):
         newSnakePart = SnakePart(color)
