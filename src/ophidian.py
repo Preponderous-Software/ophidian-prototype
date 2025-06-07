@@ -190,13 +190,13 @@ class Ophidian:
                     self.initializeLocationWidthAndHeight()
 
             if self.selectedSnakePart.getDirection() == 0:
-                self.environment_repository.moveEntity(self.selectedSnakePart, 0, self.checkForLevelProgressAndReinitialize)
+                self.environment_repository.move_entity(self.selectedSnakePart, 0, self.checkForLevelProgressAndReinitialize)
             elif self.selectedSnakePart.getDirection() == 1:
-                self.environment_repository.moveEntity(self.selectedSnakePart, 1, self.checkForLevelProgressAndReinitialize)
+                self.environment_repository.move_entity(self.selectedSnakePart, 1, self.checkForLevelProgressAndReinitialize)
             elif self.selectedSnakePart.getDirection() == 2:
-                self.environment_repository.moveEntity(self.selectedSnakePart, 2, self.checkForLevelProgressAndReinitialize)
+                self.environment_repository.move_entity(self.selectedSnakePart, 2, self.checkForLevelProgressAndReinitialize)
             elif self.selectedSnakePart.getDirection() == 3:
-                self.environment_repository.moveEntity(self.selectedSnakePart, 3, self.checkForLevelProgressAndReinitialize)
+                self.environment_repository.move_entity(self.selectedSnakePart, 3, self.checkForLevelProgressAndReinitialize)
 
             self.calculateScore()
             self.gameDisplay.fill(self.config.white)

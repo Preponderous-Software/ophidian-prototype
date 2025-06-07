@@ -169,34 +169,34 @@ class EnvironmentRepository (object):
 
         self.add_entity_to_location(food, target_location)
 
-    def moveEntity(self, entity: Entity, direction, checkForLevelProgressAndReinitialize):
+    def move_entity(self, entity: Entity, direction, check_for_level_progress_and_reinitialize):
         # get new location
         if direction == 0:
-            newLocation = self.get_location_above_entity(entity)
+            new_location = self.get_location_above_entity(entity)
         elif direction == 1:
-            newLocation = self.get_location_left_of_entity(entity)
+            new_location = self.get_location_left_of_entity(entity)
         elif direction == 2:
-            newLocation = self.get_location_below_entity(entity)
+            new_location = self.get_location_below_entity(entity)
         elif direction == 3:
-            newLocation = self.get_location_right_of_entity(entity)
+            new_location = self.get_location_right_of_entity(entity)
         else:
             print("Error: Invalid direction specified for entity movement.")
             return
 
-        if newLocation == -1:
+        if new_location == -1:
             # location doesn't exist, we're at a border
             return
 
         # if new location has a snake part already
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
             if type(e) is SnakePart:
                 # we have a collision
                 self.collision = True
                 print("The ophidian collides with itself and ceases to be.")
                 time.sleep(self.config.tickSpeed * 20)
                 if self.config.restartUponCollision:
-                    checkForLevelProgressAndReinitialize()
+                    check_for_level_progress_and_reinitialize()
                 else:
                     self.running = False
                 return
@@ -204,43 +204,43 @@ class EnvironmentRepository (object):
         # move entity
         location = self.get_location_of_entity(entity)
         self.remove_entity_from_location(entity)
-        newLocation.addEntity(entity)
+        new_location.addEntity(entity)
         entity.lastPosition = location
 
         # move all attached snake parts
         if entity.hasPrevious():
-            self.movePreviousSnakePart(entity)
+            self.move_previous_snake_part(entity)
 
         food = -1
         # check for food
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
             if type(e) is Food:
                 food = e
 
         if food == -1:
             return
 
-        foodColor = food.getColor()
+        food_color = food.getColor()
 
         self.remove_entity_from_location(food)
         self.spawn_food()
-        self.spawn_snake_part(entity.getTail(), foodColor)
+        self.spawn_snake_part(entity.getTail(), food_color)
 
-    def movePreviousSnakePart(self, snakePart):
-        previousSnakePart = snakePart.previousSnakePart
+    def move_previous_snake_part(self, snake_part):
+        previous_snake_part = snake_part.previousSnakePart
 
-        previousSnakePartLocation = self.get_location_of_entity(previousSnakePart)
+        previous_snake_part_location = self.get_location_of_entity(previous_snake_part)
 
-        if previousSnakePartLocation == -1:
+        if previous_snake_part_location == -1:
             print("Error: A previous snake part's location was unexpectantly -1.")
 
-        targetLocation = snakePart.lastPosition
+        target_location = snake_part.lastPosition
 
         # move entity
-        previousSnakePartLocation.removeEntity(previousSnakePart)
-        targetLocation.addEntity(previousSnakePart)
-        previousSnakePart.lastPosition = previousSnakePartLocation
+        previous_snake_part_location.removeEntity(previous_snake_part)
+        target_location.addEntity(previous_snake_part)
+        previous_snake_part.lastPosition = previous_snake_part_location
 
-        if previousSnakePart.hasPrevious():
-            self.movePreviousSnakePart(previousSnakePart)
+        if previous_snake_part.hasPrevious():
+            self.move_previous_snake_part(previous_snake_part)
