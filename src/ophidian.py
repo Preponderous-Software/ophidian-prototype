@@ -9,6 +9,7 @@ from input.keyDownEventHandler import KeyDownEventHandler
 from lib.graphik.src.graphik import Graphik
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
+from graphics.renderer import Renderer
 
 
 # @author Daniel McCoy Stephenson
@@ -29,6 +30,7 @@ class Ophidian:
         self.score = 0
         self.changed_direction_this_tick = False
         self.collision = False
+        self.renderer = Renderer(self.graphik, self.collision, self.config)
 
     def initialize_game_display(self):
         if self.config.fullscreen:
@@ -49,33 +51,13 @@ class Ophidian:
     def draw_environment(self):
         for locationId in self.environment_repository.get_locations():
             location = self.environment_repository.get_location_by_id(locationId)
-            self.draw_location(
+            self.renderer.draw_location(
                 location,
                 location.getX() * self.location_width - 1,
                 location.getY() * self.location_height - 1,
                 self.location_width + 2,
                 self.location_height + 2,
             )
-
-    # Returns the color that a location should be displayed as.
-    def get_color_of_location(self, location):
-        if location == -1:
-            color = self.config.white
-        else:
-            color = self.config.white
-            if location.getNumEntities() > 0:
-                top_entity_id = list(location.getEntities().keys())[-1]
-                top_entity = location.getEntity(top_entity_id)
-                return top_entity.getColor()
-        return color
-
-    # Draws a location at a specified position.
-    def draw_location(self, location, x_pos, y_pos, width, height):
-        if self.collision == True:
-            color = self.config.red
-        else:
-            color = self.get_color_of_location(location)
-        self.graphik.drawRectangle(x_pos, y_pos, width, height, color)
 
     def calculate_score(self):
         length = self.snake_part_repository.get_length()
