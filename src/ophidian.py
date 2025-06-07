@@ -9,6 +9,7 @@ from lib.graphik.src.graphik import Graphik
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
 from environment.environmentRepository import EnvironmentRepository
+from input.keyDownEventHandler import KeyDownEventHandler
 
 
 # @author Daniel McCoy Stephenson
@@ -217,50 +218,17 @@ class Ophidian:
         self.removeEntityFromLocation(entity)
 
     def handleKeyDownEvent(self, key):
-        if key == pygame.K_q:
-            self.running = False
-        elif key == pygame.K_w or key == pygame.K_UP:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 2
-            ):
-                self.selectedSnakePart.setDirection(0)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_a or key == pygame.K_LEFT:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 3
-            ):
-                self.selectedSnakePart.setDirection(1)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_s or key == pygame.K_DOWN:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 0
-            ):
-                self.selectedSnakePart.setDirection(2)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_d or key == pygame.K_RIGHT:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 1
-            ):
-                self.selectedSnakePart.setDirection(3)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_F11:
-            if self.config.fullscreen:
-                self.config.fullscreen = False
-            else:
-                self.config.fullscreen = True
-            self.initializeGameDisplay()
-        elif key == pygame.K_l:
-            if self.config.limitTickSpeed:
-                self.config.limitTickSpeed = False
-            else:
-                self.config.limitTickSpeed = True
-        elif key == pygame.K_r:
+        key_down_event_handler = KeyDownEventHandler(
+            self.config, self.gameDisplay, self.selectedSnakePart
+        )
+        result = key_down_event_handler.handle_key_down_event(key)
+        if result == "quit":
+            self.quitApplication()
+        elif result == "restart":
             self.checkForLevelProgressAndReinitialize()
             return "restart"
+        elif result == "initialize game display":
+            self.initializeGameDisplay()
 
     def spawnSnakePart(self, snakePart: SnakePart, color):
         newSnakePart = SnakePart(color)
