@@ -1,6 +1,8 @@
 from lib.pyenvlib.environment import Environment
 from lib.pyenvlib.grid import Grid
 
+from lib.pyenvlib.entity import Entity
+
 
 class EnvironmentRepository (object):
     def __init__(self, level, gridSize):
@@ -118,3 +120,8 @@ class EnvironmentRepository (object):
         if location is None:
             raise Exception(f"Location with ID {locationId} not found")
         return location
+
+    def removeEntityFromLocation(self, entity: Entity):
+        location = self.getLocation(entity)
+        if location.isEntityPresent(entity):
+            location.removeEntity(entity)

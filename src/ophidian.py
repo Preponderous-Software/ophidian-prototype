@@ -113,9 +113,6 @@ class Ophidian:
         pygame.quit()
         quit()
 
-    def getLocation(self, entity: Entity):
-        return self.environment_repository.get_location_of_entity(entity)
-
     def moveEntity(self, entity: Entity, direction):
         # get new location
         if direction == 0:
@@ -151,7 +148,7 @@ class Ophidian:
                 return
 
         # move entity
-        location = self.getLocation(entity)
+        location = self.environment_repository.get_location_of_entity(entity)
         self.environment_repository.remove_entity_from_location(entity)
         newLocation.addEntity(entity)
         entity.lastPosition = location
@@ -183,7 +180,7 @@ class Ophidian:
 
         foodColor = food.getColor()
 
-        self.removeEntity(food)
+        self.environment_repository.remove_entity_from_location(food)
         self.spawnFood()
         self.spawnSnakePart(entity.getTail(), foodColor)
         self.calculateScore()
@@ -191,7 +188,7 @@ class Ophidian:
     def movePreviousSnakePart(self, snakePart):
         previousSnakePart = snakePart.previousSnakePart
 
-        previousSnakePartLocation = self.getLocation(previousSnakePart)
+        previousSnakePartLocation = self.environment_repository.get_location_of_entity(previousSnakePart)
 
         if previousSnakePartLocation == -1:
             print("Error: A previous snake part's location was unexpectantly -1.")
@@ -207,14 +204,6 @@ class Ophidian:
 
         if previousSnakePart.hasPrevious():
             self.movePreviousSnakePart(previousSnakePart)
-
-    def removeEntityFromLocation(self, entity: Entity):
-        location = self.getLocation(entity)
-        if location.isEntityPresent(entity):
-            location.removeEntity(entity)
-
-    def removeEntity(self, entity: Entity):
-        self.removeEntityFromLocation(entity)
 
     def handleKeyDownEvent(self, key):
         if key == pygame.K_q:
