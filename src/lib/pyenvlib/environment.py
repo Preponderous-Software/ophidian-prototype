@@ -57,7 +57,7 @@ class Environment(object):
 
     # Removes an entity from the underlying grid.
     def removeEntity(self, entity: Entity):
-        self.grid.removeEntity(entity)
+        self.grid.remove_entity(entity)
 
     # Checks if an entity is present anywhere in the underlying grid.
     def isEntityPresent(self, entity: Entity):

@@ -17,75 +17,75 @@ class Ophidian:
     def __init__(self):
         pygame.init()
         self.config = Config()
-        self.initializeGameDisplay()
+        self.initialize_game_display()
         pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
-        self.graphik = Graphik(self.gameDisplay)
+        self.graphik = Graphik(self.game_display)
         self.running = True
-        self.snakeParts = []
+        self.snake_parts = []
         self.level = 1
         self.initialize()
         self.tick = 0
         self.score = 0
-        self.changedDirectionThisTick = False
+        self.changed_direction_this_tick = False
         self.collision = False
 
-    def initializeGameDisplay(self):
+    def initialize_game_display(self):
         if self.config.fullscreen:
-            self.gameDisplay = pygame.display.set_mode(
-                (self.config.displayWidth, self.config.displayHeight), pygame.FULLSCREEN
+            self.game_display = pygame.display.set_mode(
+                (self.config.display_width, self.config.display_height), pygame.FULLSCREEN
             )
         else:
-            self.gameDisplay = pygame.display.set_mode(
-                (self.config.displayWidth, self.config.displayHeight), pygame.RESIZABLE
+            self.game_display = pygame.display.set_mode(
+                (self.config.display_width, self.config.display_height), pygame.RESIZABLE
             )
 
-    def initializeLocationWidthAndHeight(self):
-        x, y = self.gameDisplay.get_size()
-        self.locationWidth = x / self.environment.getGrid().getRows()
-        self.locationHeight = y / self.environment.getGrid().getColumns()
+    def initialize_location_width_and_height(self):
+        x, y = self.game_display.get_size()
+        self.location_width = x / self.environment.getGrid().getRows()
+        self.location_height = y / self.environment.getGrid().getColumns()
 
     # Draws the environment in its entirety.
-    def drawEnvironment(self):
+    def draw_environment(self):
         for locationId in self.environment.getGrid().getLocations():
-            location = self.environment.getGrid().getLocation(locationId)
-            self.drawLocation(
+            location = self.environment.getGrid().get_location(locationId)
+            self.draw_location(
                 location,
-                location.getX() * self.locationWidth - 1,
-                location.getY() * self.locationHeight - 1,
-                self.locationWidth + 2,
-                self.locationHeight + 2,
+                location.getX() * self.location_width - 1,
+                location.getY() * self.location_height - 1,
+                self.location_width + 2,
+                self.location_height + 2,
             )
 
     # Returns the color that a location should be displayed as.
-    def getColorOfLocation(self, location):
+    def get_color_of_location(self, location):
         if location == -1:
             color = self.config.white
         else:
             color = self.config.white
             if location.getNumEntities() > 0:
-                topEntityId = list(location.getEntities().keys())[-1]
-                topEntity = location.getEntity(topEntityId)
-                return topEntity.getColor()
+                top_entity_id = list(location.getEntities().keys())[-1]
+                top_entity = location.getEntity(top_entity_id)
+                return top_entity.get_color()
         return color
 
     # Draws a location at a specified position.
-    def drawLocation(self, location, xPos, yPos, width, height):
+    def draw_location(self, location, x_pos, y_pos, width, height):
         if self.collision == True:
             color = self.config.red
         else:
-            color = self.getColorOfLocation(location)
-        self.graphik.drawRectangle(xPos, yPos, width, height, color)
+            color = self.get_color_of_location(location)
+        self.graphik.drawRectangle(x_pos, y_pos, width, height, color)
 
-    def calculateScore(self):
-        length = len(self.snakeParts)
-        numLocations = len(self.environment.grid.getLocations())
-        percentage = int(length / numLocations * 100)
+    def calculate_score(self):
+        length = len(self.snake_parts)
+        num_locations = len(self.environment.grid.getLocations())
+        percentage = int(length / num_locations * 100)
         self.score = length * percentage
 
-    def displayStatsInConsole(self):
-        length = len(self.snakeParts)
-        numLocations = len(self.environment.grid.getLocations())
-        percentage = int(length / numLocations * 100)
+    def display_stats_in_console(self):
+        length = len(self.snake_parts)
+        num_locations = len(self.environment.grid.getLocations())
+        percentage = int(length / num_locations * 100)
         print(
             "The ophidian had a length of",
             length,
@@ -96,72 +96,72 @@ class Ophidian:
         print("Score:", self.score)
         print("-----")
 
-    def checkForLevelProgressAndReinitialize(self):
+    def check_for_level_progress_and_reinitialize(self):
         if (
-            len(self.snakeParts)
+            len(self.snake_parts)
             > len(self.environment.grid.getLocations())
-            * self.config.levelProgressPercentageRequired
+            * self.config.level_progress_percentage_required
         ):
             self.level += 1
         self.initialize()
 
-    def quitApplication(self):
-        self.displayStatsInConsole()
+    def quit_application(self):
+        self.display_stats_in_console()
         pygame.quit()
         quit()
 
-    def getLocation(self, entity: Entity):
-        locationID = entity.getLocationID()
+    def get_location(self, entity: Entity):
+        location_id = entity.getLocationID()
         grid = self.environment.getGrid()
-        return grid.getLocation(locationID)
+        return grid.get_location(location_id)
 
-    def getLocationAndGrid(self, entity: Entity):
-        locationID = entity.getLocationID()
+    def get_location_and_grid(self, entity: Entity):
+        location_id = entity.getLocationID()
         grid = self.environment.getGrid()
-        return grid, grid.getLocation(locationID)
+        return grid, grid.get_location(location_id)
 
-    def moveEntity(self, entity: Entity, direction):
-        grid, location = self.getLocationAndGrid(entity)
+    def move_entity(self, entity: Entity, direction):
+        grid, location = self.get_location_and_grid(entity)
 
-        newLocation = -1
+        new_location = -1
         # get new location
         if direction == 0:
-            newLocation = grid.getUp(location)
+            new_location = grid.getUp(location)
         elif direction == 1:
-            newLocation = grid.getLeft(location)
+            new_location = grid.getLeft(location)
         elif direction == 2:
-            newLocation = grid.getDown(location)
+            new_location = grid.getDown(location)
         elif direction == 3:
-            newLocation = grid.getRight(location)
+            new_location = grid.getRight(location)
 
-        if newLocation == -1:
+        if new_location == -1:
             # location doesn't exist, we're at a border
             return
 
         # if new location has a snake part already
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
             if type(e) is SnakePart:
                 # we have a collision
                 self.collision = True
                 print("The ophidian collides with itself and ceases to be.")
-                self.drawEnvironment()
+                self.draw_environment()
                 pygame.display.update()
-                time.sleep(self.config.tickSpeed * 20)
-                if self.config.restartUponCollision:
-                    self.checkForLevelProgressAndReinitialize()
+                time.sleep(self.config.tick_speed * 20)
+                if self.config.restart_upon_collision:
+                    self.check_for_level_progress_and_reinitialize()
                 else:
                     self.running = False
                 return
 
         # move entity
-        location.removeEntity(entity)
-        newLocation.addEntity(entity)
+        location.remove_entity(entity)
+        new_location.addEntity(entity)
         entity.lastPosition = location
 
         # move all attached snake parts
         if entity.hasPrevious():
-            self.movePreviousSnakePart(entity)
+            self.move_previous_snake_part(entity)
 
         if self.config.debug:
             print(
@@ -176,8 +176,8 @@ class Ophidian:
 
         food = -1
         # check for food
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
             if type(e) is Food:
                 food = e
 
@@ -186,86 +186,86 @@ class Ophidian:
 
         foodColor = food.getColor()
 
-        self.removeEntity(food)
-        self.spawnFood()
-        self.spawnSnakePart(entity.getTail(), foodColor)
-        self.calculateScore()
+        self.remove_entity(food)
+        self.spawn_food()
+        self.spawn_snake_part(entity.getTail(), foodColor)
+        self.calculate_score()
 
-    def movePreviousSnakePart(self, snakePart):
-        previousSnakePart = snakePart.previousSnakePart
+    def move_previous_snake_part(self, snake_part):
+        previous_snake_part = snake_part.previous_snake_part
 
-        previousSnakePartLocation = self.getLocation(previousSnakePart)
+        previous_snake_part_location = self.get_location(previous_snake_part)
 
-        if previousSnakePartLocation == -1:
+        if previous_snake_part_location == -1:
             print("Error: A previous snake part's location was unexpectantly -1.")
             time.sleep(1)
-            self.quitApplication()
+            self.quit_application()
 
-        targetLocation = snakePart.lastPosition
+        target_location = snake_part.last_position
 
         # move entity
-        previousSnakePartLocation.removeEntity(previousSnakePart)
-        targetLocation.addEntity(previousSnakePart)
-        previousSnakePart.lastPosition = previousSnakePartLocation
+        previous_snake_part_location.removeEntity(previous_snake_part)
+        target_location.addEntity(previous_snake_part)
+        previous_snake_part.last_position = previous_snake_part_location
 
-        if previousSnakePart.hasPrevious():
-            self.movePreviousSnakePart(previousSnakePart)
+        if previous_snake_part.has_previous():
+            self.move_previous_snake_part(previous_snake_part)
 
-    def removeEntityFromLocation(self, entity: Entity):
-        location = self.getLocation(entity)
+    def remove_entity_from_location(self, entity: Entity):
+        location = self.get_location(entity)
         if location.isEntityPresent(entity):
-            location.removeEntity(entity)
+            location.remove_entity(entity)
 
-    def removeEntity(self, entity: Entity):
-        self.removeEntityFromLocation(entity)
+    def remove_entity(self, entity: Entity):
+        self.remove_entity_from_location(entity)
 
-    def handleKeyDownEvent(self, key):
+    def handle_key_down_event(self, key):
         if key == pygame.K_q:
             self.running = False
         elif key == pygame.K_w or key == pygame.K_UP:
             if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 2
+                self.changed_direction_this_tick == False
+                and self.selected_snake_part.get_direction() != 2
             ):
-                self.selectedSnakePart.setDirection(0)
-                self.changedDirectionThisTick = True
+                self.selected_snake_part.set_direction(0)
+                self.changed_direction_this_tick = True
         elif key == pygame.K_a or key == pygame.K_LEFT:
             if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 3
+                self.changed_direction_this_tick == False
+                and self.selected_snake_part.get_direction() != 3
             ):
-                self.selectedSnakePart.setDirection(1)
-                self.changedDirectionThisTick = True
+                self.selected_snake_part.set_direction(1)
+                self.changed_direction_this_tick = True
         elif key == pygame.K_s or key == pygame.K_DOWN:
             if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 0
+                self.changed_direction_this_tick == False
+                and self.selected_snake_part.get_direction() != 0
             ):
-                self.selectedSnakePart.setDirection(2)
-                self.changedDirectionThisTick = True
+                self.selected_snake_part.set_direction(2)
+                self.changed_direction_this_tick = True
         elif key == pygame.K_d or key == pygame.K_RIGHT:
             if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 1
+                self.changed_direction_this_tick == False
+                and self.selected_snake_part.get_direction() != 1
             ):
-                self.selectedSnakePart.setDirection(3)
-                self.changedDirectionThisTick = True
+                self.selected_snake_part.set_direction(3)
+                self.changed_direction_this_tick = True
         elif key == pygame.K_F11:
             if self.config.fullscreen:
                 self.config.fullscreen = False
             else:
                 self.config.fullscreen = True
-            self.initializeGameDisplay()
+            self.initialize_game_display()
         elif key == pygame.K_l:
-            if self.config.limitTickSpeed:
-                self.config.limitTickSpeed = False
+            if self.config.limit_tick_speed:
+                self.config.limit_tick_speed = False
             else:
-                self.config.limitTickSpeed = True
+                self.config.limit_tick_speed = True
         elif key == pygame.K_r:
-            self.checkForLevelProgressAndReinitialize()
+            self.check_for_level_progress_and_reinitialize()
             return "restart"
 
-    def getRandomDirection(self, grid: Grid, location: Location):
+    def get_random_direction(self, grid: Grid, location: Location):
         direction = random.randrange(0, 4)
         if direction == 0:
             return grid.getUp(location)
@@ -276,7 +276,7 @@ class Ophidian:
         elif direction == 3:
             return grid.getLeft(location)
 
-    def getLocationDirection(self, direction, grid, location):
+    def get_location_direction(self, direction, grid, location):
         if direction == 0:
             return grid.getUp(location)
         elif direction == 1:
@@ -286,7 +286,7 @@ class Ophidian:
         elif direction == 3:
             return grid.getRight(location)
 
-    def getLocationOppositeDirection(self, direction, grid, location):
+    def get_location_opposite_direction(self, direction, grid, location):
         if direction == 0:
             return grid.getDown(location)
         elif direction == 1:
@@ -296,24 +296,24 @@ class Ophidian:
         elif direction == 3:
             return grid.getLeft(location)
 
-    def spawnSnakePart(self, snakePart: SnakePart, color):
-        newSnakePart = SnakePart(color)
-        snakePart.setPrevious(newSnakePart)
-        newSnakePart.setNext(snakePart)
-        grid, location = self.getLocationAndGrid(snakePart)
+    def spawn_snake_part(self, snake_part: SnakePart, color):
+        new_snake_part = SnakePart(color)
+        snake_part.set_previous(new_snake_part)
+        new_snake_part.set_next(snake_part)
+        grid, location = self.get_location_and_grid(snake_part)
 
-        targetLocation = -1
+        target_location = -1
         while True:
-            targetLocation = self.getRandomDirection(grid, location)
-            if targetLocation != -1 and targetLocation != self.getLocationDirection(
-                snakePart.getDirection(), grid, location
+            target_location = self.get_random_direction(grid, location)
+            if target_location != -1 and target_location != self.get_location_direction(
+                snake_part.get_direction(), grid, location
             ):
                 break
 
-        self.environment.addEntityToLocation(newSnakePart, targetLocation)
-        self.snakeParts.append(newSnakePart)
+        self.environment.addEntityToLocation(new_snake_part, target_location)
+        self.snake_parts.append(new_snake_part)
 
-    def spawnFood(self):
+    def spawn_food(self):
         food = Food(
             (
                 random.randrange(50, 200),
@@ -323,96 +323,96 @@ class Ophidian:
         )
 
         # get target location
-        targetLocation = -1
-        notFound = True
-        while notFound:
-            targetLocation = self.environment.getGrid().getRandomLocation()
-            if targetLocation.getNumEntities() == 0:
-                notFound = False
+        target_location = -1
+        not_found = True
+        while not_found:
+            target_location = self.environment.getGrid().getRandomLocation()
+            if target_location.getNumEntities() == 0:
+                not_found = False
 
         self.environment.addEntity(food)
 
     def initialize(self):
         self.collision = False
         self.score = 0
-        self.snakeParts = []
+        self.snake_parts = []
         self.tick = 0
         if self.level == 1:
             self.environment = Environment(
-                "Level " + str(self.level), self.config.gridSize
+                "Level " + str(self.level), self.config.grid_size
             )
         else:
             self.environment = Environment(
-                "Level " + str(self.level), self.config.gridSize + (self.level - 1) * 2
+                "Level " + str(self.level), self.config.grid_size + (self.level - 1) * 2
             )
-        self.initializeLocationWidthAndHeight()
+        self.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
-        self.selectedSnakePart = SnakePart(
+        self.selected_snake_part = SnakePart(
             (
                 random.randrange(50, 200),
                 random.randrange(50, 200),
                 random.randrange(50, 200),
             )
         )
-        self.environment.addEntity(self.selectedSnakePart)
-        self.snakeParts.append(self.selectedSnakePart)
+        self.environment.addEntity(self.selected_snake_part)
+        self.snake_parts.append(self.selected_snake_part)
         print("The ophidian enters the world.")
-        self.spawnFood()
+        self.spawn_food()
 
     def run(self):
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.quitApplication()
+                    self.quit_application()
                 elif event.type == pygame.KEYDOWN:
-                    result = self.handleKeyDownEvent(event.key)
+                    result = self.handle_key_down_event(event.key)
                     if result == "restart":
                         continue
                 elif event.type == pygame.WINDOWRESIZED:
-                    self.initializeLocationWidthAndHeight()
+                    self.initialize_location_width_and_height()
 
-            if self.selectedSnakePart.getDirection() == 0:
-                self.moveEntity(self.selectedSnakePart, 0)
-            elif self.selectedSnakePart.getDirection() == 1:
-                self.moveEntity(self.selectedSnakePart, 1)
-            elif self.selectedSnakePart.getDirection() == 2:
-                self.moveEntity(self.selectedSnakePart, 2)
-            elif self.selectedSnakePart.getDirection() == 3:
-                self.moveEntity(self.selectedSnakePart, 3)
+            if self.selected_snake_part.get_direction() == 0:
+                self.move_entity(self.selected_snake_part, 0)
+            elif self.selected_snake_part.get_direction() == 1:
+                self.move_entity(self.selected_snake_part, 1)
+            elif self.selected_snake_part.get_direction() == 2:
+                self.move_entity(self.selected_snake_part, 2)
+            elif self.selected_snake_part.get_direction() == 3:
+                self.move_entity(self.selected_snake_part, 3)
 
-            self.gameDisplay.fill(self.config.white)
-            self.drawEnvironment()
-            x, y = self.gameDisplay.get_size()
+            self.game_display.fill(self.config.white)
+            self.draw_environment()
+            x, y = self.game_display.get_size()
 
             # draw progress bar
-            percentage = len(self.snakeParts) / len(
+            percentage = len(self.snake_parts) / len(
                 self.environment.grid.getLocations()
             )
-            pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20))
-            if percentage < self.config.levelProgressPercentageRequired / 2:
+            pygame.draw.rect(self.game_display, self.config.black, (0, y - 20, x, 20))
+            if percentage < self.config.level_progress_percentage_required / 2:
                 pygame.draw.rect(
-                    self.gameDisplay, self.config.red, (0, y - 20, x * percentage, 20)
+                    self.game_display, self.config.red, (0, y - 20, x * percentage, 20)
                 )
-            elif percentage < self.config.levelProgressPercentageRequired:
+            elif percentage < self.config.level_progress_percentage_required:
                 pygame.draw.rect(
-                    self.gameDisplay,
+                    self.game_display,
                     self.config.yellow,
                     (0, y - 20, x * percentage, 20),
                 )
             else:
                 pygame.draw.rect(
-                    self.gameDisplay, self.config.green, (0, y - 20, x * percentage, 20)
+                    self.game_display, self.config.green, (0, y - 20, x * percentage, 20)
                 )
-            pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20), 1)
+            pygame.draw.rect(self.game_display, self.config.black, (0, y - 20, x, 20), 1)
 
             pygame.display.update()
 
-            if self.config.limitTickSpeed:
-                time.sleep(self.config.tickSpeed)
+            if self.config.limit_tick_speed:
+                time.sleep(self.config.tick_speed)
                 self.tick += 1
-                self.changedDirectionThisTick = False
+                self.changed_direction_this_tick = False
 
-        self.quitApplication()
+        self.quit_application()
 
 
 ophidian = Ophidian()

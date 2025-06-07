@@ -90,7 +90,7 @@ class Grid(object):
         for locationId in self.getLocations():
             location = self.locations[locationId]
             if location.isEntityPresent(entity):
-                location.removeEntity(entity)
+                location.remove_entity(entity)
                 return
 
     # Checks if an entity is present in this grid.
