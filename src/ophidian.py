@@ -6,8 +6,6 @@ from config.config import Config
 from lib.pyenvlib.entity import Entity
 from food.food import Food
 from lib.graphik.src.graphik import Graphik
-from lib.pyenvlib.grid import Grid
-from lib.pyenvlib.location import Location
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
 from environment.environmentRepository import EnvironmentRepository
@@ -263,37 +261,6 @@ class Ophidian:
         elif key == pygame.K_r:
             self.checkForLevelProgressAndReinitialize()
             return "restart"
-
-    def getRandomDirection(self, grid: Grid, location: Location):
-        direction = random.randrange(0, 4)
-        if direction == 0:
-            return grid.getUp(location)
-        elif direction == 1:
-            return grid.getRight(location)
-        elif direction == 2:
-            return grid.getDown(location)
-        elif direction == 3:
-            return grid.getLeft(location)
-
-    def getLocationDirection(self, direction, grid, location):
-        if direction == 0:
-            return grid.getUp(location)
-        elif direction == 1:
-            return grid.getLeft(location)
-        elif direction == 2:
-            return grid.getDown(location)
-        elif direction == 3:
-            return grid.getRight(location)
-
-    def getLocationOppositeDirection(self, direction, grid, location):
-        if direction == 0:
-            return grid.getDown(location)
-        elif direction == 1:
-            return grid.getRight(location)
-        elif direction == 2:
-            return grid.getUp(location)
-        elif direction == 3:
-            return grid.getLeft(location)
 
     def spawnSnakePart(self, snakePart: SnakePart, color):
         newSnakePart = SnakePart(color)
