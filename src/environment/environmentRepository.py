@@ -1,11 +1,16 @@
+import random
+
 from lib.pyenvlib.environment import Environment
 from lib.pyenvlib.grid import Grid
 
 from lib.pyenvlib.entity import Entity
 
+from food.food import Food
+from snake.snakePart import SnakePart
+
 
 class EnvironmentRepository (object):
-    def __init__(self, level, gridSize):
+    def __init__(self, level, gridSize, snakePartRepository):
         if level == 1:
             self.environment = Environment(
                 "Level " + str(level), gridSize
@@ -14,6 +19,8 @@ class EnvironmentRepository (object):
             self.environment = Environment(
                 "Level " + str(level), gridSize + (level - 1) * 2
             )
+
+        self.snake_part_repository = snakePartRepository
 
     def get_rows(self):
         return self.environment.getGrid().getRows()
@@ -125,3 +132,37 @@ class EnvironmentRepository (object):
         location = self.getLocation(entity)
         if location.isEntityPresent(entity):
             location.removeEntity(entity)
+
+    def spawn_snake_part(self, snake_part: SnakePart, color):
+        new_snake_part = SnakePart(color)
+        snake_part.setPrevious(new_snake_part)
+        new_snake_part.setNext(snake_part)
+
+        location = self.get_location_of_entity(snake_part)
+        while True:
+            target_location = self.get_location_in_random_direction(location)
+            location_in_current_direction_of_snake_part = self.get_location_in_direction_of_entity(snake_part.getDirection(), snake_part)
+            if target_location != -1 and target_location != location_in_current_direction_of_snake_part:
+                break
+
+        self.add_entity_to_location(new_snake_part, target_location)
+        self.snake_part_repository.append(new_snake_part)
+
+    def spawn_food(self):
+        food = Food(
+            (
+                random.randrange(50, 200),
+                random.randrange(50, 200),
+                random.randrange(50, 200),
+            )
+        )
+
+        # get target location
+        target_location = -1
+        not_found = True
+        while not_found:
+            target_location = self.get_random_location()
+            if target_location.getNumEntities() == 0:
+                not_found = False
+
+        self.add_entity_to_location(food, target_location)
