@@ -122,7 +122,7 @@ class Ophidian:
                     if result == "restart":
                         continue
                 elif event.type == pygame.WINDOWRESIZED:
-                    self.initialize_location_width_and_height()
+                    self.renderer.initialize_location_width_and_height()
 
             if self.selected_snake_part.getDirection() == 0:
                 self.environment_repository.move_entity(self.selected_snake_part, 0, self.check_for_level_progress_and_reinitialize)
