@@ -56,11 +56,11 @@ class KeyDownEventHandler:
                 self.config.fullscreen = True
             return "initialize game display"
         elif key == pygame.K_l:
-            if self.config.limitTickSpeed:
-                self.config.limitTickSpeed = False
+            if self.config.limit_tick_speed:
+                self.config.limit_tick_speed = False
                 return None
             else:
-                self.config.limitTickSpeed = True
+                self.config.limit_tick_speed = True
                 return None
         elif key == pygame.K_r:
             return "restart"
