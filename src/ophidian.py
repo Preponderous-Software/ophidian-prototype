@@ -47,7 +47,7 @@ class Ophidian:
     # Draws the environment in its entirety.
     def draw_environment(self):
         for locationId in self.environment.getGrid().getLocations():
-            location = self.environment.getGrid().get_location(locationId)
+            location = self.environment.getGrid().getLocation(locationId)
             self.draw_location(
                 location,
                 location.getX() * self.location_width - 1,
@@ -113,12 +113,12 @@ class Ophidian:
     def get_location(self, entity: Entity):
         location_id = entity.getLocationID()
         grid = self.environment.getGrid()
-        return grid.get_location(location_id)
+        return grid.getLocation(location_id)
 
     def get_location_and_grid(self, entity: Entity):
         location_id = entity.getLocationID()
         grid = self.environment.getGrid()
-        return grid, grid.get_location(location_id)
+        return grid, grid.getLocation(location_id)
 
     def move_entity(self, entity: Entity, direction):
         grid, location = self.get_location_and_grid(entity)
@@ -155,12 +155,12 @@ class Ophidian:
                 return
 
         # move entity
-        location.remove_entity(entity)
+        location.removeEntity(entity)
         new_location.addEntity(entity)
         entity.lastPosition = location
 
         # move all attached snake parts
-        if entity.hasPrevious():
+        if entity.has_previous():
             self.move_previous_snake_part(entity)
 
         if self.config.debug:
@@ -184,11 +184,11 @@ class Ophidian:
         if food == -1:
             return
 
-        foodColor = food.getColor()
+        foodColor = food.get_color()
 
         self.remove_entity(food)
         self.spawn_food()
-        self.spawn_snake_part(entity.getTail(), foodColor)
+        self.spawn_snake_part(entity.get_tail(), foodColor)
         self.calculate_score()
 
     def move_previous_snake_part(self, snake_part):
@@ -214,7 +214,7 @@ class Ophidian:
     def remove_entity_from_location(self, entity: Entity):
         location = self.get_location(entity)
         if location.isEntityPresent(entity):
-            location.remove_entity(entity)
+            location.removeEntity(entity)
 
     def remove_entity(self, entity: Entity):
         self.remove_entity_from_location(entity)
