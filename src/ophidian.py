@@ -25,12 +25,12 @@ class Ophidian:
         self.snake_part_repository = SnakePartRepository()
         self.level = 1
         self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
-        self.initialize()
         self.tick = 0
         self.score = 0
         self.changed_direction_this_tick = False
         self.collision = False
-        self.renderer = Renderer(self.graphik, self.collision, self.config)
+        self.renderer = Renderer(self.graphik, self.collision, self.config, self.environment_repository)
+        self.initialize()
 
     def initialize_game_display(self):
         if self.config.fullscreen:
@@ -40,23 +40,6 @@ class Ophidian:
         else:
             self.game_display = pygame.display.set_mode(
                 (self.config.display_width, self.config.display_height), pygame.RESIZABLE
-            )
-
-    def initialize_location_width_and_height(self):
-        x, y = self.game_display.get_size()
-        self.location_width = x / self.environment_repository.get_rows()
-        self.location_height = y / self.environment_repository.get_columns()
-
-    # Draws the environment in its entirety.
-    def draw_environment(self):
-        for locationId in self.environment_repository.get_locations():
-            location = self.environment_repository.get_location_by_id(locationId)
-            self.renderer.draw_location(
-                location,
-                location.getX() * self.location_width - 1,
-                location.getY() * self.location_height - 1,
-                self.location_width + 2,
-                self.location_height + 2,
             )
 
     def calculate_score(self):
@@ -115,7 +98,7 @@ class Ophidian:
         self.collision = False
         self.score = 0
         self.tick = 0
-        self.initialize_location_width_and_height()
+        self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selected_snake_part = SnakePart(
             (
@@ -152,7 +135,7 @@ class Ophidian:
 
             self.calculate_score()
             self.game_display.fill(self.config.white)
-            self.draw_environment()
+            self.renderer.draw_environment()
             x, y = self.game_display.get_size()
 
             # draw progress bar
