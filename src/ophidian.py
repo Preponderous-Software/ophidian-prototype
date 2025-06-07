@@ -19,10 +19,15 @@ from lib.patchwork.environmentRenderer import EnvironmentRenderer
 from lib.patchwork.gridRenderer import GridRenderer
 from lib.patchwork.locationRenderer import LocationRenderer
 
+import logging
+
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
 class Ophidian:
     def __init__(self):
+        logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
+        self.logger = logging.getLogger(__name__)
+        print("Initializing Ophidian")
         pygame.init()
         self.config = Config()
         self.initializeGameDisplay()
@@ -38,7 +43,7 @@ class Ophidian:
         self.collision = False
         
         self.url = "http://localhost"
-        self.port = "9999"
+        self.port = 9999
         
         self.entityService = EntityService(self.url, self.port)
         self.environmentService = EnvironmentService(self.url, self.port)
@@ -49,7 +54,9 @@ class Ophidian:
         
         self.environmentRenderer = EnvironmentRenderer(self.graphik, self.url, self.port)
 
+
     def initializeGameDisplay(self):
+        print("Initializing game display")
         if self.config.fullscreen:
             self.gameDisplay = pygame.display.set_mode(
                 (self.config.displayWidth, self.config.displayHeight), pygame.FULLSCREEN
@@ -60,16 +67,19 @@ class Ophidian:
             )
 
     def initializeLocationWidthAndHeight(self, gridSize):
+        print("Initializing location width and height")
         x, y = self.gameDisplay.get_size()
         self.locationWidth = x / gridSize
         self.locationHeight = y / gridSize
 
     # Draws the environment in its entirety.
     def drawEnvironment(self):
+        print("Drawing environment")
         self.environmentRenderer.draw(self.environment)
 
     # Returns the color that a location should be displayed as.
     def getColorOfLocation(self, location):
+        print("Getting color for location")
         if location == -1:
             color = self.config.white
         else:
@@ -82,6 +92,7 @@ class Ophidian:
 
     # Draws a location at a specified position.
     def drawLocation(self, location, xPos, yPos, width, height):
+        print("Drawing location")
         if self.collision == True:
             color = self.config.red
         else:
@@ -89,12 +100,14 @@ class Ophidian:
         self.graphik.drawRectangle(xPos, yPos, width, height, color)
 
     def calculateScore(self):
+        print("Calculating score")
         length = len(self.snakeParts)
         numLocations = len(self.environment.grid.getLocations())
         percentage = int(length / numLocations * 100)
         self.score = length * percentage
 
     def displayStatsInConsole(self):
+        logging.debug("Displaying stats in console")
         length = len(self.snakeParts)
         numLocations = len(self.environment.grid.getLocations())
         percentage = int(length / numLocations * 100)
@@ -109,6 +122,7 @@ class Ophidian:
         print("-----")
 
     def checkForLevelProgressAndReinitialize(self):
+        logging.debug("Checking for level progress")
         if (
             len(self.snakeParts)
             > len(self.environment.grid.getLocations())
@@ -118,62 +132,67 @@ class Ophidian:
         self.initialize()
 
     def quitApplication(self):
+        logging.debug("Quitting application")
         self.displayStatsInConsole()
         pygame.quit()
         quit()
 
     def getLocation(self, entity: Entity):
-        locationID = entity.getLocationID()
+        logging.debug("Getting location")
+        locationId = self.locationService.getLocationId(entity.getEntityId())
         grid = self.environment.getGrid()
-        return grid.getLocation(locationID)
+        return grid.getLocation(locationId)
 
-    def getLocationAndGrid(self, entity: Entity):
-        locationID = entity.getLocationID()
-        grid = self.environment.getGrid()
-        return grid, grid.getLocation(locationID)
+    def getLocationAndGrid(self, snakePart: SnakePart):
+        logging.debug("Getting location and grid")
+        location = self.locationService.get_location_of_entity(snakePart.getEntityId())
+        grid = self.gridService.get_grid_of_entity(snakePart.getEntityId())
+        return grid, location
 
-    def moveEntity(self, entity: Entity, direction):
-        grid, location = self.getLocationAndGrid(entity)
+    def moveEntity(self, snakePart: SnakePart, direction):
+        logging.debug("Moving entity")
+        grid, location = self.getLocationAndGrid(snakePart)
 
         newLocation = -1
         # get new location
         if direction == 0:
-            newLocation = grid.getUp(location)
+            newLocation = self.getUp(location, grid)
         elif direction == 1:
-            newLocation = grid.getLeft(location)
+            newLocation = self.getLeft(location, grid)
         elif direction == 2:
-            newLocation = grid.getDown(location)
+            newLocation = self.getDown(location, grid)
         elif direction == 3:
-            newLocation = grid.getRight(location)
+            newLocation = self.getRight(location, grid)
 
         if newLocation == -1:
             # location doesn't exist, we're at a border
             return
 
         # if new location has a snake part already
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
-            if type(e) is SnakePart:
-                # we have a collision
-                self.collision = True
-                print("The ophidian collides with itself and ceases to be.")
-                self.drawEnvironment()
-                pygame.display.update()
-                time.sleep(self.config.tickSpeed * 20)
-                if self.config.restartUponCollision:
-                    self.checkForLevelProgressAndReinitialize()
-                else:
-                    self.running = False
-                return
+        entities_in_new_location = self.entityService.get_entities_in_location(newLocation.get_location_id())
+        if len(entities_in_new_location) > 0:
+            for entity in entities_in_new_location:
+                if isinstance(entity, SnakePart):
+                    # we have a collision
+                    self.collision = True
+                    print("The ophidian collides with itself and ceases to be.")
+                    self.drawEnvironment()
+                    pygame.display.update()
+                    time.sleep(self.config.tickSpeed * 20)
+                    if self.config.restartUponCollision:
+                        self.checkForLevelProgressAndReinitialize()
+                    else:
+                        self.running = False
+                    return
 
         # move entity
-        location.removeEntity(entity)
-        newLocation.addEntity(entity)
-        entity.lastPosition = location
+        self.locationService.remove_entity_from_location(snakePart.getEntityId(), location.get_location_id())
+        self.locationService.add_entity_to_location(snakePart.getEntityId(), newLocation.get_location_id())
+        snakePart.lastPosition = location
 
         # move all attached snake parts
-        if entity.hasPrevious():
-            self.movePreviousSnakePart(entity)
+        if snakePart.hasPrevious():
+            self.movePreviousSnakePart(snakePart)
 
         if self.config.debug:
             print(
@@ -188,12 +207,19 @@ class Ophidian:
 
         food = -1
         # check for food
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
-            if type(e) is Food:
-                food = e
+        entities_in_new_location = self.entityService.get_entities_in_location(newLocation.get_location_id())
+        if len(entities_in_new_location) == 0:
+            # no food in new location
+            return
+
+        # check if food is in new location
+        for entity in entities_in_new_location:
+            if isinstance(entity, Food):
+                food = entity
+                break
 
         if food == -1:
+            # no food in new location
             return
 
         foodColor = food.getColor()
@@ -203,7 +229,57 @@ class Ophidian:
         self.spawnSnakePart(entity.getTail(), foodColor)
         self.calculateScore()
 
+    def getUp(self, location, grid):
+        logging.debug("Getting up location")
+        y = location.get_y()
+        x = location.get_x()
+        if y - 1 < 0:
+            return -1
+        locations = self.locationService.get_locations_in_grid(grid.get_grid_id())
+        for loc in locations:
+            if loc.get_x() == x and loc.get_y() == y - 1:
+                return loc
+        return -1
+
+
+    def getLeft(self, location, grid):
+        logging.debug("Getting left location")
+        y = location.get_y()
+        x = location.get_x()
+        if x - 1 < 0:
+            return -1
+        locations = self.locationService.get_locations_in_grid(grid.get_grid_id())
+        for loc in locations:
+            if loc.get_x() == x - 1 and loc.get_y() == y:
+                return loc
+        return -1
+
+    def getDown(self, location, grid):
+        logging.debug("Getting down location")
+        y = location.get_y()
+        x = location.get_x()
+        if y + 1 >= self.config.gridSize:
+            return -1
+        locations = self.locationService.get_locations_in_grid(grid.get_grid_id())
+        for loc in locations:
+            if loc.get_x() == x and loc.get_y() == y + 1:
+                return loc
+        return -1
+
+    def getRight(self, location, grid):
+        logging.debug("Getting right location")
+        y = location.get_y()
+        x = location.get_x()
+        if x + 1 >= self.config.gridSize:
+            return -1
+        locations = self.locationService.get_locations_in_grid(grid.get_grid_id())
+        for loc in locations:
+            if loc.get_x() == x + 1 and loc.get_y() == y:
+                return loc
+        return -1
+
     def movePreviousSnakePart(self, snakePart):
+        logging.debug("Moving previous snake part")
         previousSnakePart = snakePart.previousSnakePart
 
         previousSnakePartLocation = self.getLocation(previousSnakePart)
@@ -224,14 +300,17 @@ class Ophidian:
             self.movePreviousSnakePart(previousSnakePart)
 
     def removeEntityFromLocation(self, entity: Entity):
+        logging.debug("Removing entity from location")
         location = self.getLocation(entity)
         if location.isEntityPresent(entity):
             location.removeEntity(entity)
 
     def removeEntity(self, entity: Entity):
+        logging.debug("Removing entity")
         self.removeEntityFromLocation(entity)
 
     def handleKeyDownEvent(self, key):
+        logging.debug("Key down event")
         if key == pygame.K_q:
             self.running = False
         elif key == pygame.K_w or key == pygame.K_UP:
@@ -278,6 +357,7 @@ class Ophidian:
             return "restart"
 
     def getRandomDirection(self, grid: Grid, location: Location):
+        logging.debug("Getting random direction")
         direction = random.randrange(0, 4)
         if direction == 0:
             return grid.getUp(location)
@@ -289,6 +369,7 @@ class Ophidian:
             return grid.getLeft(location)
 
     def getLocationDirection(self, direction, grid, location):
+        logging.debug("Getting location direction")
         if direction == 0:
             return grid.getUp(location)
         elif direction == 1:
@@ -299,6 +380,7 @@ class Ophidian:
             return grid.getRight(location)
 
     def getLocationOppositeDirection(self, direction, grid, location):
+        logging.debug("Getting location opposite direction")
         if direction == 0:
             return grid.getDown(location)
         elif direction == 1:
@@ -309,6 +391,7 @@ class Ophidian:
             return grid.getLeft(location)
 
     def spawnSnakePart(self, snakePart: SnakePart, color):
+        logging.debug("Spawning snake part")
         newSnakePart = SnakePart(color)
         snakePart.setPrevious(newSnakePart)
         newSnakePart.setNext(snakePart)
@@ -326,23 +409,30 @@ class Ophidian:
         self.snakeParts.append(newSnakePart)
 
     def spawnFood(self):
+        print("Spawning food")
+        foodEntity = self.entityService.create_entity("Food")
         food = Food(
             (
                 random.randrange(50, 200),
                 random.randrange(50, 200),
                 random.randrange(50, 200),
-            )
+            ),
+            foodEntity.getEntityId()
         )
+        print("Food entity created with entityId", foodEntity.getEntityId())
 
-        # get target location
-        targetLocation = -1
         notFound = True
         while notFound:
-            targetLocation = self.environment.getGrid().getRandomLocation()
-            if targetLocation.getNumEntities() == 0:
+            print("Getting grids in environment")
+            grid = self.gridService.get_grids_in_environment(self.environment.getEnvironmentId())[0]
+            print("Getting random location")
+            targetLocation = self.get_random_location(grid)
+            print("Getting number of entities")
+            entities_in_target_location = len(self.entityService.get_entities_in_location(targetLocation.get_location_id()))
+            if entities_in_target_location == 0:
                 notFound = False
 
-        self.environment.addEntity(food)
+        self.locationService.add_entity_to_location(food.get_entity_id(), targetLocation.get_location_id())
 
     def initialize(self):
         self.collision = False
@@ -357,22 +447,25 @@ class Ophidian:
         
         self.initializeLocationWidthAndHeight(self.config.gridSize)
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
+        newEntity = self.entityService.create_entity("Snake Part")
         self.selectedSnakePart = SnakePart(
             (
                 random.randrange(50, 200),
                 random.randrange(50, 200),
                 random.randrange(50, 200),
-            )
+            ),
+            newEntity.getEntityId()
         )
-        entity = self.entityService.create_entity(self.selectedSnakePart.getName())
-        entityId = entity.getEntityId()
-        locationId = self.locationService.get_all_locations()[0].get_location_id()
-        self.locationService.add_entity_to_location(entityId, locationId)
+        first_location = self.locationService.get_all_locations()[0]
+        location_id = first_location.get_location_id()
+        self.locationService.add_entity_to_location(newEntity.getEntityId(), location_id)
         self.snakeParts.append(self.selectedSnakePart)
         print("The ophidian enters the world.")
         self.spawnFood()
+        print("Done initializing")
 
     def run(self):
+        print("Starting game")
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -398,8 +491,9 @@ class Ophidian:
             x, y = self.gameDisplay.get_size()
 
             # draw progress bar
+            locations = self.locationService.get_locations_in_environment(self.environment.getEnvironmentId())
             percentage = len(self.snakeParts) / len(
-                self.environment.grid.getLocations()
+                locations
             )
             pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20))
             if percentage < self.config.levelProgressPercentageRequired / 2:
@@ -426,6 +520,14 @@ class Ophidian:
                 self.changedDirectionThisTick = False
 
         self.quitApplication()
+
+    def get_random_location(self, grid):
+        locations = self.locationService.get_locations_in_grid(grid.get_grid_id())
+        if not locations:
+            print("bad response from service")
+            return -1
+        random_index = random.randint(0, len(locations) - 1)
+        return locations[random_index]
 
 
 ophidian = Ophidian()

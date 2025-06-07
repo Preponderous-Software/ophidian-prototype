@@ -3,17 +3,22 @@
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
-from Viron.src.main.python.preponderous.viron.models.entity import Entity
 
 
-class SnakePart(Entity):
-    def __init__(self, color):
-        Entity.__init__(self, "Snake Part")
+class SnakePart:
+    def __init__(self, color, entityId):
+        self.entityId = entityId
         self.color = color
         self.direction = 0
         self.nextSnakePart = -1
         self.previousSnakePart = -1
         self.lastPosition = -1
+
+    def getEntityId(self):
+        return self.entityId
+
+    def setEntityId(self, entityId):
+        self.entityId = entityId
 
     def getDirection(self):
         return self.direction

@@ -8,7 +8,7 @@ class GridRenderer:
     def __init__(self, graphik: Graphik, url: str, port: int):
         self.graphik = graphik
         self.location_service = LocationService(url, port)
-        self.location_renderer = LocationRenderer(graphik)
+        self.location_renderer = LocationRenderer(graphik, url, port)
         self.locations_cache = {}
     
     def draw(self, grid: Grid):

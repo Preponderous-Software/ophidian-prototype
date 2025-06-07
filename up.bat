@@ -1,0 +1,1 @@
+docker compose -f src/Viron/compose.yml up --build -d
