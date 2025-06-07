@@ -2,14 +2,13 @@ import random
 import time
 
 import pygame
+
 from config.config import Config
-from lib.pyenvlib.entity import Entity
-from food.food import Food
+from environment.environmentRepository import EnvironmentRepository
+from input.keyDownEventHandler import KeyDownEventHandler
 from lib.graphik.src.graphik import Graphik
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
-from environment.environmentRepository import EnvironmentRepository
-from input.keyDownEventHandler import KeyDownEventHandler
 
 
 # @author Daniel McCoy Stephenson
