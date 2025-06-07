@@ -1,9 +1,18 @@
+import random
+import time
+
 from lib.pyenvlib.environment import Environment
 from lib.pyenvlib.grid import Grid
 
+from lib.pyenvlib.entity import Entity
+
+from food.food import Food
+from snake.snakePart import SnakePart
+
 
 class EnvironmentRepository (object):
-    def __init__(self, level, gridSize):
+    def __init__(self, level, gridSize, snakePartRepository, config):
+        self.config = config
         if level == 1:
             self.environment = Environment(
                 "Level " + str(level), gridSize
@@ -12,6 +21,8 @@ class EnvironmentRepository (object):
             self.environment = Environment(
                 "Level " + str(level), gridSize + (level - 1) * 2
             )
+
+        self.snake_part_repository = snakePartRepository
 
     def get_rows(self):
         return self.environment.getGrid().getRows()
@@ -118,3 +129,118 @@ class EnvironmentRepository (object):
         if location is None:
             raise Exception(f"Location with ID {locationId} not found")
         return location
+
+    def removeEntityFromLocation(self, entity: Entity):
+        location = self.getLocation(entity)
+        if location.isEntityPresent(entity):
+            location.removeEntity(entity)
+
+    def spawn_snake_part(self, snake_part: SnakePart, color):
+        new_snake_part = SnakePart(color)
+        snake_part.setPrevious(new_snake_part)
+        new_snake_part.setNext(snake_part)
+
+        location = self.get_location_of_entity(snake_part)
+        while True:
+            target_location = self.get_location_in_random_direction(location)
+            location_in_current_direction_of_snake_part = self.get_location_in_direction_of_entity(snake_part.getDirection(), snake_part)
+            if target_location != -1 and target_location != location_in_current_direction_of_snake_part:
+                break
+
+        self.add_entity_to_location(new_snake_part, target_location)
+        self.snake_part_repository.append(new_snake_part)
+
+    def spawn_food(self):
+        food = Food(
+            (
+                random.randrange(50, 200),
+                random.randrange(50, 200),
+                random.randrange(50, 200),
+            )
+        )
+
+        # get target location
+        target_location = -1
+        not_found = True
+        while not_found:
+            target_location = self.get_random_location()
+            if target_location.getNumEntities() == 0:
+                not_found = False
+
+        self.add_entity_to_location(food, target_location)
+
+    def move_entity(self, entity: Entity, direction, check_for_level_progress_and_reinitialize):
+        # get new location
+        if direction == 0:
+            new_location = self.get_location_above_entity(entity)
+        elif direction == 1:
+            new_location = self.get_location_left_of_entity(entity)
+        elif direction == 2:
+            new_location = self.get_location_below_entity(entity)
+        elif direction == 3:
+            new_location = self.get_location_right_of_entity(entity)
+        else:
+            print("Error: Invalid direction specified for entity movement.")
+            return
+
+        if new_location == -1:
+            # location doesn't exist, we're at a border
+            return
+
+        # if new location has a snake part already
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
+            if type(e) is SnakePart:
+                # we have a collision
+                self.collision = True
+                print("The ophidian collides with itself and ceases to be.")
+                time.sleep(self.config.tickSpeed * 20)
+                if self.config.restartUponCollision:
+                    check_for_level_progress_and_reinitialize()
+                else:
+                    self.running = False
+                return
+
+        # move entity
+        location = self.get_location_of_entity(entity)
+        self.remove_entity_from_location(entity)
+        new_location.addEntity(entity)
+        entity.lastPosition = location
+
+        # move all attached snake parts
+        if entity.hasPrevious():
+            self.move_previous_snake_part(entity)
+
+        food = -1
+        # check for food
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
+            if type(e) is Food:
+                food = e
+
+        if food == -1:
+            return
+
+        food_color = food.getColor()
+
+        self.remove_entity_from_location(food)
+        self.spawn_food()
+        self.spawn_snake_part(entity.getTail(), food_color)
+
+    def move_previous_snake_part(self, snake_part):
+        previous_snake_part = snake_part.previousSnakePart
+
+        previous_snake_part_location = self.get_location_of_entity(previous_snake_part)
+
+        if previous_snake_part_location == -1:
+            print("Error: A previous snake part's location was unexpectantly -1.")
+
+        target_location = snake_part.lastPosition
+
+        # move entity
+        previous_snake_part_location.removeEntity(previous_snake_part)
+        target_location.addEntity(previous_snake_part)
+        previous_snake_part.lastPosition = previous_snake_part_location
+
+        if previous_snake_part.hasPrevious():
+            self.move_previous_snake_part(previous_snake_part)

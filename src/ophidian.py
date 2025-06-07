@@ -24,7 +24,7 @@ class Ophidian:
         self.running = True
         self.snakePartRepository = SnakePartRepository()
         self.level = 1
-        self.environment_repository = EnvironmentRepository(self.level, self.config.gridSize)
+        self.environment_repository = EnvironmentRepository(self.level, self.config.gridSize, self.snakePartRepository, self.config)
         self.initialize()
         self.tick = 0
         self.score = 0
@@ -105,7 +105,7 @@ class Ophidian:
             * self.config.levelProgressPercentageRequired
         ):
             self.level += 1
-        self.environment_repository = EnvironmentRepository(self.level, self.config.gridSize)
+        self.environment_repository = EnvironmentRepository(self.level, self.config.gridSize, self.snakePartRepository, self.config)
         self.snakePartRepository.clear()
         self.initialize()
 
@@ -113,109 +113,6 @@ class Ophidian:
         self.displayStatsInConsole()
         pygame.quit()
         quit()
-
-    def getLocation(self, entity: Entity):
-        return self.environment_repository.get_location_of_entity(entity)
-
-    def moveEntity(self, entity: Entity, direction):
-        # get new location
-        if direction == 0:
-            newLocation = self.environment_repository.get_location_above_entity(entity)
-        elif direction == 1:
-            newLocation = self.environment_repository.get_location_left_of_entity(entity)
-        elif direction == 2:
-            newLocation = self.environment_repository.get_location_below_entity(entity)
-        elif direction == 3:
-            newLocation = self.environment_repository.get_location_right_of_entity(entity)
-        else:
-            print("Error: Invalid direction specified for entity movement.")
-            return
-
-        if newLocation == -1:
-            # location doesn't exist, we're at a border
-            return
-
-        # if new location has a snake part already
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
-            if type(e) is SnakePart:
-                # we have a collision
-                self.collision = True
-                print("The ophidian collides with itself and ceases to be.")
-                self.drawEnvironment()
-                pygame.display.update()
-                time.sleep(self.config.tickSpeed * 20)
-                if self.config.restartUponCollision:
-                    self.checkForLevelProgressAndReinitialize()
-                else:
-                    self.running = False
-                return
-
-        # move entity
-        location = self.getLocation(entity)
-        self.environment_repository.remove_entity_from_location(entity)
-        newLocation.addEntity(entity)
-        entity.lastPosition = location
-
-        # move all attached snake parts
-        if entity.hasPrevious():
-            self.movePreviousSnakePart(entity)
-
-        if self.config.debug:
-            print(
-                "[EVENT] ",
-                entity.getName(),
-                "moved to (",
-                location.getX(),
-                ",",
-                location.getY(),
-                ")",
-            )
-
-        food = -1
-        # check for food
-        for eid in newLocation.getEntities():
-            e = newLocation.getEntity(eid)
-            if type(e) is Food:
-                food = e
-
-        if food == -1:
-            return
-
-        foodColor = food.getColor()
-
-        self.removeEntity(food)
-        self.spawnFood()
-        self.spawnSnakePart(entity.getTail(), foodColor)
-        self.calculateScore()
-
-    def movePreviousSnakePart(self, snakePart):
-        previousSnakePart = snakePart.previousSnakePart
-
-        previousSnakePartLocation = self.getLocation(previousSnakePart)
-
-        if previousSnakePartLocation == -1:
-            print("Error: A previous snake part's location was unexpectantly -1.")
-            time.sleep(1)
-            self.quitApplication()
-
-        targetLocation = snakePart.lastPosition
-
-        # move entity
-        previousSnakePartLocation.removeEntity(previousSnakePart)
-        targetLocation.addEntity(previousSnakePart)
-        previousSnakePart.lastPosition = previousSnakePartLocation
-
-        if previousSnakePart.hasPrevious():
-            self.movePreviousSnakePart(previousSnakePart)
-
-    def removeEntityFromLocation(self, entity: Entity):
-        location = self.getLocation(entity)
-        if location.isEntityPresent(entity):
-            location.removeEntity(entity)
-
-    def removeEntity(self, entity: Entity):
-        self.removeEntityFromLocation(entity)
 
     def handleKeyDownEvent(self, key):
         key_down_event_handler = KeyDownEventHandler(
@@ -233,40 +130,6 @@ class Ophidian:
             return None
         return None
 
-    def spawnSnakePart(self, snakePart: SnakePart, color):
-        newSnakePart = SnakePart(color)
-        snakePart.setPrevious(newSnakePart)
-        newSnakePart.setNext(snakePart)
-
-        location = self.environment_repository.get_location_of_entity(snakePart)
-        while True:
-            targetLocation = self.environment_repository.get_location_in_random_direction(location)
-            location_in_current_direction_of_snake_part = self.environment_repository.get_location_in_direction_of_entity(snakePart.getDirection(), snakePart)
-            if targetLocation != -1 and targetLocation != location_in_current_direction_of_snake_part:
-                break
-
-        self.environment_repository.add_entity_to_location(newSnakePart, targetLocation)
-        self.snakePartRepository.append(newSnakePart)
-
-    def spawnFood(self):
-        food = Food(
-            (
-                random.randrange(50, 200),
-                random.randrange(50, 200),
-                random.randrange(50, 200),
-            )
-        )
-
-        # get target location
-        targetLocation = -1
-        notFound = True
-        while notFound:
-            targetLocation = self.environment_repository.get_random_location()
-            if targetLocation.getNumEntities() == 0:
-                notFound = False
-
-        self.environment_repository.add_entity_to_location(food, targetLocation)
-
     def initialize(self):
         self.collision = False
         self.score = 0
@@ -283,7 +146,7 @@ class Ophidian:
         self.environment_repository.add_entity_to_random_location(self.selectedSnakePart)
         self.snakePartRepository.append(self.selectedSnakePart)
         print("The ophidian enters the world.")
-        self.spawnFood()
+        self.environment_repository.spawn_food()
 
     def run(self):
         while self.running:
@@ -298,14 +161,15 @@ class Ophidian:
                     self.initializeLocationWidthAndHeight()
 
             if self.selectedSnakePart.getDirection() == 0:
-                self.moveEntity(self.selectedSnakePart, 0)
+                self.environment_repository.move_entity(self.selectedSnakePart, 0, self.checkForLevelProgressAndReinitialize)
             elif self.selectedSnakePart.getDirection() == 1:
-                self.moveEntity(self.selectedSnakePart, 1)
+                self.environment_repository.move_entity(self.selectedSnakePart, 1, self.checkForLevelProgressAndReinitialize)
             elif self.selectedSnakePart.getDirection() == 2:
-                self.moveEntity(self.selectedSnakePart, 2)
+                self.environment_repository.move_entity(self.selectedSnakePart, 2, self.checkForLevelProgressAndReinitialize)
             elif self.selectedSnakePart.getDirection() == 3:
-                self.moveEntity(self.selectedSnakePart, 3)
+                self.environment_repository.move_entity(self.selectedSnakePart, 3, self.checkForLevelProgressAndReinitialize)
 
+            self.calculateScore()
             self.gameDisplay.fill(self.config.white)
             self.drawEnvironment()
             x, y = self.gameDisplay.get_size()
