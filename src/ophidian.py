@@ -79,7 +79,7 @@ class Ophidian:
             self.check_for_level_progress_and_reinitialize()
             return "restart"
         elif result == "initialize game display":
-            self.initialize_game_display()
+            self.renderer.initialize_game_display()
             return None
         return None
 
