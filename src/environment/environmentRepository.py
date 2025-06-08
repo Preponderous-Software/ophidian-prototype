@@ -1,3 +1,4 @@
+import math
 import random
 import time
 
@@ -13,6 +14,7 @@ from snake.snakePart import SnakePart
 class EnvironmentRepository (object):
     def __init__(self, level, gridSize, snakePartRepository, config):
         self.config = config
+        print("Initializing environment repository for level " + str(level) + " with grid size " + str(gridSize))
         if level == 1:
             self.environment = Environment(
                 "Level " + str(level), gridSize
@@ -23,6 +25,7 @@ class EnvironmentRepository (object):
             )
 
         self.snake_part_repository = snakePartRepository
+        self.grid_size = gridSize
 
     def get_rows(self):
         return self.environment.getGrid().getRows()
@@ -169,7 +172,9 @@ class EnvironmentRepository (object):
 
         self.add_entity_to_location(food, target_location)
 
-    def move_entity(self, entity: Entity, direction, check_for_level_progress_and_reinitialize):
+    def move_entity(self, entity: Entity, direction):
+        check_for_level_progress_and_reinitialize = False
+
         # get new location
         if direction == 0:
             new_location = self.get_location_above_entity(entity)
@@ -181,7 +186,7 @@ class EnvironmentRepository (object):
             new_location = self.get_location_right_of_entity(entity)
         else:
             print("Error: Invalid direction specified for entity movement.")
-            return
+            raise ValueError("Invalid direction specified for entity movement.")
 
         if new_location == -1:
             # location doesn't exist, we're at a border
@@ -196,10 +201,9 @@ class EnvironmentRepository (object):
                 print("The ophidian collides with itself and ceases to be.")
                 time.sleep(self.config.tick_speed * 20)
                 if self.config.restart_upon_collision:
-                    check_for_level_progress_and_reinitialize()
+                    check_for_level_progress_and_reinitialize = True
                 else:
                     self.running = False
-                return
 
         # move entity
         location = self.get_location_of_entity(entity)
@@ -219,13 +223,14 @@ class EnvironmentRepository (object):
                 food = e
 
         if food == -1:
-            return
+            return check_for_level_progress_and_reinitialize
 
         food_color = food.getColor()
 
         self.remove_entity_from_location(food)
         self.spawn_food()
         self.spawn_snake_part(entity.getTail(), food_color)
+        return check_for_level_progress_and_reinitialize
 
     def move_previous_snake_part(self, snake_part):
         previous_snake_part = snake_part.previousSnakePart
@@ -244,3 +249,30 @@ class EnvironmentRepository (object):
 
         if previous_snake_part.hasPrevious():
             self.move_previous_snake_part(previous_snake_part)
+
+    def clear(self):
+        entities_to_remove_from_environment = []
+        for locationId in self.environment.getGrid().getLocations():
+            location = self.environment.getGrid().getLocation(locationId)
+            for entity in location.getEntities().values():
+                if isinstance(entity, SnakePart) or isinstance(entity, Food):
+                    entities_to_remove_from_environment.append(entity)
+        for entity in entities_to_remove_from_environment:
+            self.environment.removeEntity(entity)
+        self.snake_part_repository.clear()
+
+    def reinitialize(self, level, increase_grid_size):
+        self.clear()
+        current_grid_size = self.grid_size
+        print("Current grid size: " + str(current_grid_size))
+        if increase_grid_size:
+            # Increase grid size based on level
+            new_grid_size = current_grid_size + (level - 1) * 2
+        else:
+            # Keep the same grid size
+            new_grid_size = current_grid_size
+        print("Reinitializing environment for level " + str(level) + " with grid size " + str(new_grid_size))
+        self.environment = Environment(
+            "Level " + str(level), new_grid_size
+        )
+        self.grid_size = new_grid_size

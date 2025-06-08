@@ -5,8 +5,8 @@ import pygame
 
 from config.config import Config
 from environment.environmentRepository import EnvironmentRepository
+from graphics.renderer import Renderer
 from input.keyDownEventHandler import KeyDownEventHandler
-from lib.graphik.src.graphik import Graphik
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
 
@@ -16,66 +16,20 @@ from snake.snakePartRepository import SnakePartRepository
 class Ophidian:
     def __init__(self):
         pygame.init()
-        self.config = Config()
-        self.initialize_game_display()
         pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
-        self.graphik = Graphik(self.game_display)
+
         self.running = True
-        self.snake_part_repository = SnakePartRepository()
         self.level = 1
-        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
-        self.initialize()
         self.tick = 0
         self.score = 0
         self.changed_direction_this_tick = False
         self.collision = False
 
-    def initialize_game_display(self):
-        if self.config.fullscreen:
-            self.game_display = pygame.display.set_mode(
-                (self.config.display_width, self.config.display_height), pygame.FULLSCREEN
-            )
-        else:
-            self.game_display = pygame.display.set_mode(
-                (self.config.display_width, self.config.display_height), pygame.RESIZABLE
-            )
-
-    def initialize_location_width_and_height(self):
-        x, y = self.game_display.get_size()
-        self.location_width = x / self.environment_repository.get_rows()
-        self.location_height = y / self.environment_repository.get_columns()
-
-    # Draws the environment in its entirety.
-    def draw_environment(self):
-        for locationId in self.environment_repository.get_locations():
-            location = self.environment_repository.get_location_by_id(locationId)
-            self.draw_location(
-                location,
-                location.getX() * self.location_width - 1,
-                location.getY() * self.location_height - 1,
-                self.location_width + 2,
-                self.location_height + 2,
-            )
-
-    # Returns the color that a location should be displayed as.
-    def get_color_of_location(self, location):
-        if location == -1:
-            color = self.config.white
-        else:
-            color = self.config.white
-            if location.getNumEntities() > 0:
-                top_entity_id = list(location.getEntities().keys())[-1]
-                top_entity = location.getEntity(top_entity_id)
-                return top_entity.getColor()
-        return color
-
-    # Draws a location at a specified position.
-    def draw_location(self, location, x_pos, y_pos, width, height):
-        if self.collision == True:
-            color = self.config.red
-        else:
-            color = self.get_color_of_location(location)
-        self.graphik.drawRectangle(x_pos, y_pos, width, height, color)
+        self.config = Config()
+        self.snake_part_repository = SnakePartRepository()
+        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
+        self.renderer = Renderer(self.collision, self.config, self.environment_repository,self.snake_part_repository)
+        self.initialize()
 
     def calculate_score(self):
         length = self.snake_part_repository.get_length()
@@ -98,14 +52,22 @@ class Ophidian:
         print("-----")
 
     def check_for_level_progress_and_reinitialize(self):
+        print("Checking for level progress...")
         if (
             self.snake_part_repository.get_length()
             > self.environment_repository.get_num_locations()
             * self.config.level_progress_percentage_required
         ):
+            print("The ophidian has progressed to the next level.")
             self.level += 1
-        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
+            should_increase_grid_size = True
+        else:
+            should_increase_grid_size = False
+        print("Reinitializing the environment...")
+        self.environment_repository.reinitialize(self.level, should_increase_grid_size)
+        print("Resetting the snake part repository...")
         self.snake_part_repository.clear()
+        print("Re-initializing the game")
         self.initialize()
 
     def quit_application(self):
@@ -115,17 +77,20 @@ class Ophidian:
 
     def handle_key_down_event(self, key):
         key_down_event_handler = KeyDownEventHandler(
-            self.config, self.game_display, self.selected_snake_part
+            self.config, self.renderer.graphik.gameDisplay, self.selected_snake_part
         )
         result = key_down_event_handler.handle_key_down_event(key)
         if result == "quit":
+            print("Quiting the application...")
             self.quit_application()
             return None
         elif result == "restart":
+            print("Restarting the game...")
             self.check_for_level_progress_and_reinitialize()
             return "restart"
         elif result == "initialize game display":
-            self.initialize_game_display()
+            print("Re-initializing the game display...")
+            self.renderer.initialize_game_display()
             return None
         return None
 
@@ -133,7 +98,7 @@ class Ophidian:
         self.collision = False
         self.score = 0
         self.tick = 0
-        self.initialize_location_width_and_height()
+        self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selected_snake_part = SnakePart(
             (
@@ -157,40 +122,23 @@ class Ophidian:
                     if result == "restart":
                         continue
                 elif event.type == pygame.WINDOWRESIZED:
-                    self.initialize_location_width_and_height()
+                    self.renderer.initialize_location_width_and_height()
 
+            check_for_level_progress_and_reinitialize = False
             if self.selected_snake_part.getDirection() == 0:
-                self.environment_repository.move_entity(self.selected_snake_part, 0, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 0)
             elif self.selected_snake_part.getDirection() == 1:
-                self.environment_repository.move_entity(self.selected_snake_part, 1, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 1)
             elif self.selected_snake_part.getDirection() == 2:
-                self.environment_repository.move_entity(self.selected_snake_part, 2, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 2)
             elif self.selected_snake_part.getDirection() == 3:
-                self.environment_repository.move_entity(self.selected_snake_part, 3, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 3)
+
+            if (check_for_level_progress_and_reinitialize):
+                self.check_for_level_progress_and_reinitialize()
 
             self.calculate_score()
-            self.game_display.fill(self.config.white)
-            self.draw_environment()
-            x, y = self.game_display.get_size()
-
-            # draw progress bar
-            percentage = self.snake_part_repository.get_length() / self.environment_repository.get_num_locations()
-            pygame.draw.rect(self.game_display, self.config.black, (0, y - 20, x, 20))
-            if percentage < self.config.level_progress_percentage_required / 2:
-                pygame.draw.rect(
-                    self.game_display, self.config.red, (0, y - 20, x * percentage, 20)
-                )
-            elif percentage < self.config.level_progress_percentage_required:
-                pygame.draw.rect(
-                    self.game_display,
-                    self.config.yellow,
-                    (0, y - 20, x * percentage, 20),
-                )
-            else:
-                pygame.draw.rect(
-                    self.game_display, self.config.green, (0, y - 20, x * percentage, 20)
-                )
-            pygame.draw.rect(self.game_display, self.config.black, (0, y - 20, x, 20), 1)
+            self.renderer.draw()
 
             pygame.display.update()
 
