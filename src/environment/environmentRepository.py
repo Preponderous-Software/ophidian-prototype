@@ -1,52 +1,63 @@
-import math
 import random
 import time
 
-from lib.pyenvlib.environment import Environment
-from lib.pyenvlib.grid import Grid
-
-from lib.pyenvlib.entity import Entity
-
+from Viron.src.main.python.preponderous.viron.models.entity import Entity
+from Viron.src.main.python.preponderous.viron.models.environment import Environment
+from Viron.src.main.python.preponderous.viron.models.location import Location
+from Viron.src.main.python.preponderous.viron.services.entityService import EntityService
+from Viron.src.main.python.preponderous.viron.services.environmentService import EnvironmentService
+from Viron.src.main.python.preponderous.viron.services.gridService import GridService
+from Viron.src.main.python.preponderous.viron.services.locationService import LocationService
 from food.food import Food
 from snake.snakePart import SnakePart
 
 
 class EnvironmentRepository (object):
-    def __init__(self, level, gridSize, snakePartRepository, config):
+    def __init__(self, level, gridSize, snakePartRepository, config, host, port):
         self.config = config
+        self.environment_service = EnvironmentService(host, port)
+        self.grid_service = GridService(host, port)
+        self.location_service = LocationService(host, port)
+        self.entity_service = EntityService(host, port)
+
         print("Initializing environment repository for level " + str(level) + " with grid size " + str(gridSize))
         if level == 1:
-            self.environment = Environment(
-                "Level " + str(level), gridSize
-            )
+            environment = self.environment_service.create_environment("Level " + str(level), 1, gridSize)
+            self.environment_id = environment.getEnvironmentId()
         else:
-            self.environment = Environment(
-                "Level " + str(level), gridSize + (level - 1) * 2
-            )
+            environment = self.environment_service.create_environment("Level " + str(level), 1, gridSize + (level - 1) * 2)
+            self.environment_id = environment.getEnvironmentId()
 
         self.snake_part_repository = snakePartRepository
         self.grid_size = gridSize
 
     def get_rows(self):
-        return self.environment.getGrid().getRows()
+        grids = self.grid_service.get_grids_in_environment(self.environment_id)
+        first_grid = grids[0] if grids else None
+        return first_grid.get_rows() if first_grid else 0
 
     def get_columns(self):
-        return self.environment.getGrid().getColumns()
+        grids = self.grid_service.get_grids_in_environment(self.environment_id)
+        first_grid = grids[0] if grids else None
+        return first_grid.get_columns() if first_grid else 0
 
     def get_locations(self):
-        return self.environment.getGrid().getLocations()
+        grids = self.grid_service.get_grids_in_environment(self.environment_id)
+        first_grid = grids[0] if grids else None
+        return first_grid.get_locations() if first_grid else []
 
     def get_location(self, x, y):
-        return self.environment.getGrid().getLocation(x, y)
+        grids = self.grid_service.get_grids_in_environment(self.environment_id)
+        first_grid = grids[0] if grids else None
+        return first_grid.get_location_by_coordinates(x, y) if first_grid else None
 
     def get_num_locations(self):
-        return len(self.environment.getGrid().getLocations())
+        grids = self.grid_service.get_grids_in_environment(self.environment_id)
+        first_grid = grids[0] if grids else None
+        return len(first_grid.get_locations()) if first_grid else 0
 
     def get_location_of_entity(self, entity):
-        location_id = entity.getLocationID()
-        if location_id is None:
-            return None
-        return self.environment.getGrid().getLocation(location_id)
+        return self.entity_service.get_location_of_entity(entity.getEntityId())
 
     def get_location_above_entity(self, entity):
         current_location = self.get_location_of_entity(entity)
