@@ -56,7 +56,7 @@ class Renderer:
     # Returns the color that a location should be displayed as.
     def get_color_of_location(self, location):
         if location == -1:
-            color = self.config.white
+            raise ValueError("Location cannot be -1")
         else:
             color = self.config.white
             if location.getNumEntities() > 0:
