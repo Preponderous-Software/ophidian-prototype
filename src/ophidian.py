@@ -60,8 +60,11 @@ class Ophidian:
         ):
             print("The ophidian has progressed to the next level.")
             self.level += 1
+            should_increase_grid_size = True
+        else:
+            should_increase_grid_size = False
         print("Reinitializing the environment...")
-        self.environment_repository.clear()
+        self.environment_repository.reinitialize(self.level, should_increase_grid_size)
         print("Resetting the snake part repository...")
         self.snake_part_repository.clear()
         print("Re-initializing the game")

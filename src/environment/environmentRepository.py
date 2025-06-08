@@ -1,3 +1,4 @@
+import math
 import random
 import time
 
@@ -13,6 +14,7 @@ from snake.snakePart import SnakePart
 class EnvironmentRepository (object):
     def __init__(self, level, gridSize, snakePartRepository, config):
         self.config = config
+        print("Initializing environment repository for level " + str(level) + " with grid size " + str(gridSize))
         if level == 1:
             self.environment = Environment(
                 "Level " + str(level), gridSize
@@ -23,6 +25,7 @@ class EnvironmentRepository (object):
             )
 
         self.snake_part_repository = snakePartRepository
+        self.grid_size = gridSize
 
     def get_rows(self):
         return self.environment.getGrid().getRows()
@@ -257,3 +260,19 @@ class EnvironmentRepository (object):
         for entity in entities_to_remove_from_environment:
             self.environment.removeEntity(entity)
         self.snake_part_repository.clear()
+
+    def reinitialize(self, level, increase_grid_size):
+        self.clear()
+        current_grid_size = self.grid_size
+        print("Current grid size: " + str(current_grid_size))
+        if increase_grid_size:
+            # Increase grid size based on level
+            new_grid_size = current_grid_size + (level - 1) * 2
+        else:
+            # Keep the same grid size
+            new_grid_size = current_grid_size
+        print("Reinitializing environment for level " + str(level) + " with grid size " + str(new_grid_size))
+        self.environment = Environment(
+            "Level " + str(level), new_grid_size
+        )
+        self.grid_size = new_grid_size
