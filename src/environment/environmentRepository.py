@@ -181,7 +181,7 @@ class EnvironmentRepository (object):
             new_location = self.get_location_right_of_entity(entity)
         else:
             print("Error: Invalid direction specified for entity movement.")
-            return
+            raise ValueError("Invalid direction specified for entity movement.")
 
         if new_location == -1:
             # location doesn't exist, we're at a border
@@ -199,7 +199,6 @@ class EnvironmentRepository (object):
                     check_for_level_progress_and_reinitialize()
                 else:
                     self.running = False
-                return
 
         # move entity
         location = self.get_location_of_entity(entity)
