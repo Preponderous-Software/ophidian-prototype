@@ -52,14 +52,19 @@ class Ophidian:
         print("-----")
 
     def check_for_level_progress_and_reinitialize(self):
+        print("Checking for level progress...")
         if (
             self.snake_part_repository.get_length()
             > self.environment_repository.get_num_locations()
             * self.config.level_progress_percentage_required
         ):
+            print("The ophidian has progressed to the next level.")
             self.level += 1
-        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
+        print("Reinitializing the environment...")
+        self.environment_repository.clear()
+        print("Resetting the snake part repository...")
         self.snake_part_repository.clear()
+        print("Re-initializing the game")
         self.initialize()
 
     def quit_application(self):
@@ -73,12 +78,15 @@ class Ophidian:
         )
         result = key_down_event_handler.handle_key_down_event(key)
         if result == "quit":
+            print("Quiting the application...")
             self.quit_application()
             return None
         elif result == "restart":
+            print("Restarting the game...")
             self.check_for_level_progress_and_reinitialize()
             return "restart"
         elif result == "initialize game display":
+            print("Re-initializing the game display...")
             self.renderer.initialize_game_display()
             return None
         return None
@@ -113,14 +121,18 @@ class Ophidian:
                 elif event.type == pygame.WINDOWRESIZED:
                     self.renderer.initialize_location_width_and_height()
 
+            check_for_level_progress_and_reinitialize = False
             if self.selected_snake_part.getDirection() == 0:
-                self.environment_repository.move_entity(self.selected_snake_part, 0, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 0)
             elif self.selected_snake_part.getDirection() == 1:
-                self.environment_repository.move_entity(self.selected_snake_part, 1, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 1)
             elif self.selected_snake_part.getDirection() == 2:
-                self.environment_repository.move_entity(self.selected_snake_part, 2, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 2)
             elif self.selected_snake_part.getDirection() == 3:
-                self.environment_repository.move_entity(self.selected_snake_part, 3, self.check_for_level_progress_and_reinitialize)
+                check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 3)
+
+            if (check_for_level_progress_and_reinitialize):
+                self.check_for_level_progress_and_reinitialize()
 
             self.calculate_score()
             self.renderer.draw()

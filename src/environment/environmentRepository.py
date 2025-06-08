@@ -169,7 +169,9 @@ class EnvironmentRepository (object):
 
         self.add_entity_to_location(food, target_location)
 
-    def move_entity(self, entity: Entity, direction, check_for_level_progress_and_reinitialize):
+    def move_entity(self, entity: Entity, direction):
+        check_for_level_progress_and_reinitialize = False
+
         # get new location
         if direction == 0:
             new_location = self.get_location_above_entity(entity)
@@ -196,7 +198,7 @@ class EnvironmentRepository (object):
                 print("The ophidian collides with itself and ceases to be.")
                 time.sleep(self.config.tick_speed * 20)
                 if self.config.restart_upon_collision:
-                    check_for_level_progress_and_reinitialize()
+                    check_for_level_progress_and_reinitialize = True
                 else:
                     self.running = False
 
@@ -218,13 +220,14 @@ class EnvironmentRepository (object):
                 food = e
 
         if food == -1:
-            return
+            return check_for_level_progress_and_reinitialize
 
         food_color = food.getColor()
 
         self.remove_entity_from_location(food)
         self.spawn_food()
         self.spawn_snake_part(entity.getTail(), food_color)
+        return check_for_level_progress_and_reinitialize
 
     def move_previous_snake_part(self, snake_part):
         previous_snake_part = snake_part.previousSnakePart
@@ -243,3 +246,14 @@ class EnvironmentRepository (object):
 
         if previous_snake_part.hasPrevious():
             self.move_previous_snake_part(previous_snake_part)
+
+    def clear(self):
+        entities_to_remove_from_environment = []
+        for locationId in self.environment.getGrid().getLocations():
+            location = self.environment.getGrid().getLocation(locationId)
+            for entity in location.getEntities().values():
+                if isinstance(entity, SnakePart) or isinstance(entity, Food):
+                    entities_to_remove_from_environment.append(entity)
+        for entity in entities_to_remove_from_environment:
+            self.environment.removeEntity(entity)
+        self.snake_part_repository.clear()
