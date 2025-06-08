@@ -10,6 +10,8 @@ from input.keyDownEventHandler import KeyDownEventHandler
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
 
+host= "http://localhost"
+port = 9999
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
@@ -27,7 +29,7 @@ class Ophidian:
 
         self.config = Config()
         self.snake_part_repository = SnakePartRepository()
-        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
+        self.environment_repository = EnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config, host, port)
         self.renderer = Renderer(self.collision, self.config, self.environment_repository,self.snake_part_repository)
         self.initialize()
 
@@ -100,12 +102,14 @@ class Ophidian:
         self.tick = 0
         self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
+        entity = self.environment_repository.entity_service.create_entity("Ophidian")
         self.selected_snake_part = SnakePart(
             (
                 random.randrange(50, 200),
                 random.randrange(50, 200),
                 random.randrange(50, 200),
-            )
+            ),
+            entity.getEntityId()
         )
         self.environment_repository.add_entity_to_random_location(self.selected_snake_part)
         self.snake_part_repository.append(self.selected_snake_part)
@@ -134,7 +138,7 @@ class Ophidian:
             elif self.selected_snake_part.getDirection() == 3:
                 check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 3)
 
-            if (check_for_level_progress_and_reinitialize):
+            if check_for_level_progress_and_reinitialize:
                 self.check_for_level_progress_and_reinitialize()
 
             self.calculate_score()
