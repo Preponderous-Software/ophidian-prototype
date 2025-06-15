@@ -1,20 +1,15 @@
-import math
 import random
 import time
+from typing import Any, Optional
 
 from lib.pyenvlib.environment import Environment
-from lib.pyenvlib.grid import Grid
-
 from lib.pyenvlib.entity import Entity
-
 from food.food import Food
 from snake.snakePart import SnakePart
-
 from environment.environmentRepository import EnvironmentRepository
 
-
 class PyEnvLibEnvironmentRepository(EnvironmentRepository):
-    def __init__(self, level, gridSize, snakePartRepository, config):
+    def __init__(self, level: int, gridSize: int, snakePartRepository: list, config: Any) -> None:
         self.config = config
         print("Initializing environment repository for level " + str(level) + " with grid size " + str(gridSize))
         if level == 1:
@@ -28,62 +23,60 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
 
         self.snake_part_repository = snakePartRepository
         self.grid_size = gridSize
+        self.collision = False
+        self.running = True
 
-    def get_rows(self):
+    def get_rows(self) -> int:
         return self.environment.getGrid().getRows()
 
-    def get_columns(self):
+    def get_columns(self) -> int:
         return self.environment.getGrid().getColumns()
 
-    def get_locations(self):
+    def get_locations(self) -> list:
         return self.environment.getGrid().getLocations()
 
-    def get_location(self, x, y):
+    def get_location(self, x: int, y: int) -> Any:
         return self.environment.getGrid().getLocation(x, y)
 
-    def get_num_locations(self):
+    def get_num_locations(self) -> int:
         return len(self.environment.getGrid().getLocations())
 
-    def get_location_of_entity(self, entity):
+    def get_location_of_entity(self, entity: Entity) -> Optional[Any]:
         location_id = entity.getLocationID()
         if location_id is None:
             return None
         return self.environment.getGrid().getLocation(location_id)
 
-    def get_location_above_entity(self, entity):
+    def get_location_above_entity(self, entity: Entity) -> Optional[Any]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getUp(current_location)
 
-    def get_location_left_of_entity(self, entity):
+    def get_location_left_of_entity(self, entity: Entity) -> Optional[Any]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getLeft(current_location)
 
-    def get_location_below_entity(self, entity):
+    def get_location_below_entity(self, entity: Entity) -> Optional[Any]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getDown(current_location)
 
-    def get_location_right_of_entity(self, entity):
+    def get_location_right_of_entity(self, entity: Entity) -> Optional[Any]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getRight(current_location)
 
-    def add_entity_to_location(self, newSnakePart, targetLocation):
-        self.environment.addEntityToLocation(newSnakePart, targetLocation)
-
-    def get_location_in_random_direction(self, location):
+    def get_location_in_random_direction(self, location: Any) -> Any:
         directions = ['up', 'down', 'left', 'right']
-        import random
         direction = random.choice(directions)
         if direction == 'up':
             return self.environment.getGrid().getUp(location)
@@ -96,7 +89,7 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         else:
             raise ValueError("Invalid direction")
 
-    def get_location_in_direction_of_entity(self, param, snakePart):
+    def get_location_in_direction_of_entity(self, param: int, snakePart: SnakePart) -> Optional[Any]:
         location_of_snake_part = self.get_location_of_entity(snakePart)
         if location_of_snake_part is None:
             return None
@@ -111,36 +104,33 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         else:
             raise ValueError("Invalid direction parameter: " + str(param))
 
-    def get_random_location(self):
-        import random
+    def get_random_location(self) -> Any:
         rows = self.environment.getGrid().getRows()
         columns = self.environment.getGrid().getColumns()
         x = random.randint(0, rows - 1)
         y = random.randint(0, columns - 1)
         return self.environment.getGrid().getLocationByCoordinates(x, y)
 
-    def add_entity_to_random_location(self, selectedSnakePart):
+    def add_entity_to_random_location(self, selectedSnakePart: SnakePart) -> None:
         random_location = self.get_random_location()
         if random_location is not None:
             self.add_entity_to_location(selectedSnakePart, random_location)
         else:
             raise Exception("No valid location found to add entity")
 
-    def remove_entity_from_location(self, entity):
+    def add_entity_to_location(self, entity: Entity, location: Any) -> None:
+        self.environment.addEntityToLocation(entity, location)
+
+    def remove_entity_from_location(self, entity: Entity) -> None:
         self.environment.removeEntity(entity)
 
-    def get_location_by_id(self, locationId):
+    def get_location_by_id(self, locationId: str) -> Any:
         location = self.environment.getGrid().getLocation(locationId)
         if location is None:
             raise Exception(f"Location with ID {locationId} not found")
         return location
 
-    def removeEntityFromLocation(self, entity: Entity):
-        location = self.getLocation(entity)
-        if location.isEntityPresent(entity):
-            location.removeEntity(entity)
-
-    def spawn_snake_part(self, snake_part: SnakePart, color):
+    def spawn_snake_part(self, snake_part: SnakePart, color: tuple) -> None:
         new_snake_part = SnakePart(color)
         snake_part.setPrevious(new_snake_part)
         new_snake_part.setNext(snake_part)
@@ -155,7 +145,7 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         self.add_entity_to_location(new_snake_part, target_location)
         self.snake_part_repository.append(new_snake_part)
 
-    def spawn_food(self):
+    def spawn_food(self) -> None:
         food = Food(
             (
                 random.randrange(50, 200),
@@ -164,7 +154,6 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
             )
         )
 
-        # get target location
         target_location = -1
         not_found = True
         while not_found:
@@ -174,10 +163,9 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
 
         self.add_entity_to_location(food, target_location)
 
-    def move_entity(self, entity: Entity, direction):
+    def move_entity(self, entity: Entity, direction: int) -> bool:
         check_for_level_progress_and_reinitialize = False
 
-        # get new location
         if direction == 0:
             new_location = self.get_location_above_entity(entity)
         elif direction == 1:
@@ -191,14 +179,11 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
             raise ValueError("Invalid direction specified for entity movement.")
 
         if new_location == -1:
-            # location doesn't exist, we're at a border
-            return
+            return False
 
-        # if new location has a snake part already
         for eid in new_location.getEntities():
             e = new_location.getEntity(eid)
             if type(e) is SnakePart:
-                # we have a collision
                 self.collision = True
                 print("The ophidian collides with itself and ceases to be.")
                 time.sleep(self.config.tick_speed * 20)
@@ -207,18 +192,15 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
                 else:
                     self.running = False
 
-        # move entity
         location = self.get_location_of_entity(entity)
         self.remove_entity_from_location(entity)
         new_location.addEntity(entity)
         entity.lastPosition = location
 
-        # move all attached snake parts
         if entity.hasPrevious():
             self.move_previous_snake_part(entity)
 
         food = -1
-        # check for food
         for eid in new_location.getEntities():
             e = new_location.getEntity(eid)
             if type(e) is Food:
@@ -228,15 +210,13 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
             return check_for_level_progress_and_reinitialize
 
         food_color = food.getColor()
-
         self.remove_entity_from_location(food)
         self.spawn_food()
         self.spawn_snake_part(entity.getTail(), food_color)
         return check_for_level_progress_and_reinitialize
 
-    def move_previous_snake_part(self, snake_part):
+    def move_previous_snake_part(self, snake_part: SnakePart) -> None:
         previous_snake_part = snake_part.previousSnakePart
-
         previous_snake_part_location = self.get_location_of_entity(previous_snake_part)
 
         if previous_snake_part_location == -1:
@@ -244,7 +224,6 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
 
         target_location = snake_part.lastPosition
 
-        # move entity
         previous_snake_part_location.removeEntity(previous_snake_part)
         target_location.addEntity(previous_snake_part)
         previous_snake_part.lastPosition = previous_snake_part_location
@@ -252,7 +231,7 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         if previous_snake_part.hasPrevious():
             self.move_previous_snake_part(previous_snake_part)
 
-    def clear(self):
+    def clear(self) -> None:
         entities_to_remove_from_environment = []
         for locationId in self.environment.getGrid().getLocations():
             location = self.environment.getGrid().getLocation(locationId)
@@ -263,15 +242,13 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
             self.environment.removeEntity(entity)
         self.snake_part_repository.clear()
 
-    def reinitialize(self, level, increase_grid_size):
+    def reinitialize(self, level: int, increase_grid_size: bool) -> None:
         self.clear()
         current_grid_size = self.grid_size
         print("Current grid size: " + str(current_grid_size))
         if increase_grid_size:
-            # Increase grid size based on level
             new_grid_size = current_grid_size + (level - 1) * 2
         else:
-            # Keep the same grid size
             new_grid_size = current_grid_size
         print("Reinitializing environment for level " + str(level) + " with grid size " + str(new_grid_size))
         self.environment = Environment(
