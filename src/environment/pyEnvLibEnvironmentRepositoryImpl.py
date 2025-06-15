@@ -14,7 +14,7 @@ from snake.snakePartRepository import SnakePartRepository
 from lib.pyenvlib.location import Location
 
 
-class PyEnvLibEnvironmentRepository(EnvironmentRepository):
+class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
     def __init__(self, level: int, grid_size: int, snake_part_repository: SnakePartRepository, config: Config) -> None:
         self.config = config
         print("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))

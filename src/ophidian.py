@@ -8,7 +8,7 @@ from graphics.renderer import Renderer
 from input.keyDownEventHandler import KeyDownEventHandler
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
-from environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepository
+from environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepositoryImpl
 
 
 # @author Daniel McCoy Stephenson
@@ -27,7 +27,7 @@ class Ophidian:
 
         self.config = Config()
         self.snake_part_repository = SnakePartRepository()
-        self.environment_repository = PyEnvLibEnvironmentRepository(self.level, self.config.grid_size, self.snake_part_repository, self.config)
+        self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(self.level, self.config.grid_size, self.snake_part_repository, self.config)
         self.renderer = Renderer(self.collision, self.config, self.environment_repository,self.snake_part_repository)
         self.initialize()
 
