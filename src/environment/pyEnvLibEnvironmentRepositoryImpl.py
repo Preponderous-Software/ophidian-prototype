@@ -9,20 +9,20 @@ from snake.snakePart import SnakePart
 from environment.environmentRepository import EnvironmentRepository
 
 class PyEnvLibEnvironmentRepository(EnvironmentRepository):
-    def __init__(self, level: int, gridSize: int, snakePartRepository: list, config: Any) -> None:
+    def __init__(self, level: int, grid_size: int, snake_part_repository: list, config: Any) -> None:
         self.config = config
-        print("Initializing environment repository for level " + str(level) + " with grid size " + str(gridSize))
+        print("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
         if level == 1:
             self.environment = Environment(
-                "Level " + str(level), gridSize
+                "Level " + str(level), grid_size
             )
         else:
             self.environment = Environment(
-                "Level " + str(level), gridSize + (level - 1) * 2
+                "Level " + str(level), grid_size + (level - 1) * 2
             )
 
-        self.snake_part_repository = snakePartRepository
-        self.grid_size = gridSize
+        self.snake_part_repository = snake_part_repository
+        self.grid_size = grid_size
         self.collision = False
         self.running = True
 
