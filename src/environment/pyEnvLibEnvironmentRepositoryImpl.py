@@ -95,8 +95,8 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         else:
             raise ValueError("Invalid direction")
 
-    def get_location_in_direction_of_entity(self, param: int, snakePart: SnakePart) -> Optional[Location]:
-        location_of_snake_part = self.get_location_of_entity(snakePart)
+    def get_location_in_direction_of_entity(self, param: int, snake_part: SnakePart) -> Optional[Location]:
+        location_of_snake_part = self.get_location_of_entity(snake_part)
         if location_of_snake_part is None:
             return None
         if param == 0:
@@ -117,10 +117,10 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         y = random.randint(0, columns - 1)
         return self.environment.getGrid().getLocationByCoordinates(x, y)
 
-    def add_entity_to_random_location(self, selectedSnakePart: SnakePart) -> None:
+    def add_entity_to_random_location(self, selected_snake_part: SnakePart) -> None:
         random_location = self.get_random_location()
         if random_location is not None:
-            self.add_entity_to_location(selectedSnakePart, random_location)
+            self.add_entity_to_location(selected_snake_part, random_location)
         else:
             raise Exception("No valid location found to add entity")
 
@@ -130,10 +130,10 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
     def remove_entity_from_location(self, entity: Entity) -> None:
         self.environment.removeEntity(entity)
 
-    def get_location_by_id(self, locationId: str) -> Location:
-        location = self.environment.getGrid().getLocation(locationId)
+    def get_location_by_id(self, location_id: str) -> Location:
+        location = self.environment.getGrid().getLocation(location_id)
         if location is None:
-            raise Exception(f"Location with ID {locationId} not found")
+            raise Exception(f"Location with ID {location_id} not found")
         return location
 
     def spawn_snake_part(self, snake_part: SnakePart, color: tuple) -> None:
