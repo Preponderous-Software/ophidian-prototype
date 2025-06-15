@@ -51,10 +51,6 @@ class EnvironmentRepository(ABC):
         pass
 
     @abstractmethod
-    def add_entity_to_location(self, entity):
-        pass
-
-    @abstractmethod
     def get_location_in_random_direction(self, location):
         pass
 
