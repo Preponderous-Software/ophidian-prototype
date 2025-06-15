@@ -8,8 +8,14 @@ from food.food import Food
 from snake.snakePart import SnakePart
 from environment.environmentRepository import EnvironmentRepository
 
+from config.config import Config
+from snake.snakePartRepository import SnakePartRepository
+
+from lib.pyenvlib.location import Location
+
+
 class PyEnvLibEnvironmentRepository(EnvironmentRepository):
-    def __init__(self, level: int, grid_size: int, snake_part_repository: list, config: Any) -> None:
+    def __init__(self, level: int, grid_size: int, snake_part_repository: SnakePartRepository, config: Config) -> None:
         self.config = config
         print("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
         if level == 1:
@@ -41,41 +47,41 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
     def get_num_locations(self) -> int:
         return len(self.environment.getGrid().getLocations())
 
-    def get_location_of_entity(self, entity: Entity) -> Optional[Any]:
+    def get_location_of_entity(self, entity: Entity) -> Optional[Location]:
         location_id = entity.getLocationID()
         if location_id is None:
             return None
         return self.environment.getGrid().getLocation(location_id)
 
-    def get_location_above_entity(self, entity: Entity) -> Optional[Any]:
+    def get_location_above_entity(self, entity: Entity) -> Optional[Location]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getUp(current_location)
 
-    def get_location_left_of_entity(self, entity: Entity) -> Optional[Any]:
+    def get_location_left_of_entity(self, entity: Entity) -> Optional[Location]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getLeft(current_location)
 
-    def get_location_below_entity(self, entity: Entity) -> Optional[Any]:
+    def get_location_below_entity(self, entity: Entity) -> Optional[Location]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getDown(current_location)
 
-    def get_location_right_of_entity(self, entity: Entity) -> Optional[Any]:
+    def get_location_right_of_entity(self, entity: Entity) -> Optional[Location]:
         current_location = self.get_location_of_entity(entity)
         if current_location is None:
             return None
         grid = self.environment.getGrid()
         return grid.getRight(current_location)
 
-    def get_location_in_random_direction(self, location: Any) -> Any:
+    def get_location_in_random_direction(self, location: Location) -> Location:
         directions = ['up', 'down', 'left', 'right']
         direction = random.choice(directions)
         if direction == 'up':
@@ -89,7 +95,7 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         else:
             raise ValueError("Invalid direction")
 
-    def get_location_in_direction_of_entity(self, param: int, snakePart: SnakePart) -> Optional[Any]:
+    def get_location_in_direction_of_entity(self, param: int, snakePart: SnakePart) -> Optional[Location]:
         location_of_snake_part = self.get_location_of_entity(snakePart)
         if location_of_snake_part is None:
             return None
@@ -104,7 +110,7 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
         else:
             raise ValueError("Invalid direction parameter: " + str(param))
 
-    def get_random_location(self) -> Any:
+    def get_random_location(self) -> Location:
         rows = self.environment.getGrid().getRows()
         columns = self.environment.getGrid().getColumns()
         x = random.randint(0, rows - 1)
@@ -124,7 +130,7 @@ class PyEnvLibEnvironmentRepository(EnvironmentRepository):
     def remove_entity_from_location(self, entity: Entity) -> None:
         self.environment.removeEntity(entity)
 
-    def get_location_by_id(self, locationId: str) -> Any:
+    def get_location_by_id(self, locationId: str) -> Location:
         location = self.environment.getGrid().getLocation(locationId)
         if location is None:
             raise Exception(f"Location with ID {locationId} not found")
