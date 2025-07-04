@@ -29,4 +29,4 @@ class Config:
         # misc
         self.debug = False
         self.restart_upon_collision = True
-        self.level_progress_percentage_required = 0.5
+        self.level_progress_percentage_required = 0.25
