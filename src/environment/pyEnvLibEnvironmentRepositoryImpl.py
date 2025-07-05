@@ -1,5 +1,7 @@
+import os
 import random
 import time
+import logging
 from typing import Any, Optional
 
 from src.lib.pyenvlib.environment import Environment
@@ -13,11 +15,14 @@ from src.snake.snakePartRepository import SnakePartRepository
 
 from src.lib.pyenvlib.location import Location
 
+log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=getattr(logging, log_level))
+logger = logging.getLogger(__name__)
 
 class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
     def __init__(self, level: int, grid_size: int, snake_part_repository: SnakePartRepository, config: Config) -> None:
         self.config = config
-        print("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
+        logging.info("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
         if level == 1:
             self.environment = Environment(
                 "Level " + str(level), grid_size
@@ -181,7 +186,7 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         elif direction == 3:
             new_location = self.get_location_right_of_entity(entity)
         else:
-            print("Error: Invalid direction specified for entity movement.")
+            logging.error("Error: Invalid direction specified for entity movement.")
             raise ValueError("Invalid direction specified for entity movement.")
 
         if new_location == -1:
@@ -191,7 +196,7 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
             e = new_location.getEntity(eid)
             if type(e) is SnakePart:
                 self.collision = True
-                print("The ophidian collides with itself and ceases to be.")
+                logging.info("The ophidian collides with itself and ceases to be.")
                 time.sleep(self.config.tick_speed * 20)
                 if self.config.restart_upon_collision:
                     check_for_level_progress_and_reinitialize = True
@@ -226,7 +231,7 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         previous_snake_part_location = self.get_location_of_entity(previous_snake_part)
 
         if previous_snake_part_location == -1:
-            print("Error: A previous snake part's location was unexpectantly -1.")
+            logging.error("Error: A previous snake part's location was unexpectantly -1.")
 
         target_location = snake_part.lastPosition
 
