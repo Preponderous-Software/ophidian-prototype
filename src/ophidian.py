@@ -40,9 +40,13 @@ class Ophidian:
             * self.config.level_progress_percentage_required
         ):
             print("The ophidian has progressed to the next level.")
+            # Save the score before progressing
+            self.game_score.level_complete()
             self.level += 1
             should_increase_grid_size = True
         else:
+            # Self-collision
+            self.game_score.reset()
             should_increase_grid_size = False
         print("Reinitializing the environment...")
         self.environment_repository.reinitialize(self.level, should_increase_grid_size)
@@ -50,6 +54,7 @@ class Ophidian:
         self.snake_part_repository.clear()
         print("Re-initializing the game")
         self.initialize()
+
 
     def quit_application(self):
         self.game_score.display_stats()
@@ -67,6 +72,8 @@ class Ophidian:
             return None
         elif result == "restart":
             print("Restarting the game...")
+            # Reset score when manually restarting
+            self.game_score.reset()
             self.check_for_level_progress_and_reinitialize()
             return "restart"
         elif result == "initialize game display":
@@ -77,7 +84,6 @@ class Ophidian:
 
     def initialize(self):
         self.collision = False
-        self.game_score.reset()
         self.tick = 0
         self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
@@ -92,6 +98,7 @@ class Ophidian:
         self.snake_part_repository.append(self.selected_snake_part)
         print("The ophidian enters the world.")
         self.environment_repository.spawn_food()
+
 
     def run(self):
         while self.running:
