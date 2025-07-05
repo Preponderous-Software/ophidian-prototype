@@ -248,16 +248,15 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
             self.environment.removeEntity(entity)
         self.snake_part_repository.clear()
 
-    def reinitialize(self, level: int, increase_grid_size: bool) -> None:
-        self.clear()
-        current_grid_size = self.grid_size
-        print("Current grid size: " + str(current_grid_size))
-        if increase_grid_size:
-            new_grid_size = current_grid_size + (level - 1) * 2
+    def reinitialize(self, level, should_increase_grid_size):
+        if should_increase_grid_size is None:
+            # Maintain current grid size
+            new_grid_size = min(self.config.min_grid_size + level - 1, self.config.max_grid_size)
+        elif should_increase_grid_size:
+            # Increase grid size for next level
+            new_grid_size = min(self.config.min_grid_size + level - 1, self.config.max_grid_size)
         else:
-            new_grid_size = current_grid_size
-        print("Reinitializing environment for level " + str(level) + " with grid size " + str(new_grid_size))
-        self.environment = Environment(
-            "Level " + str(level), new_grid_size
-        )
+            # Reset to minimum size (should not happen in normal gameplay)
+            new_grid_size = self.config.min_grid_size
+
         self.grid_size = new_grid_size
