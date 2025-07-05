@@ -5,13 +5,17 @@ from src.lib.graphik.src.graphik import Graphik
 
 class Renderer:
 
-    def __init__(self, collision, config, environment_repository, snake_part_repository):
+    def __init__(self, collision, config, environment_repository, snake_part_repository, game_score):
         self.collision = collision
         self.config = config
         self.environment_repository = environment_repository
         self.snake_part_repository = snake_part_repository
+        self.game_score = game_score
         self.initialize_game_display()
         self.graphik = Graphik(self.game_display)
+        self.location_width = 0
+        self.location_height = 0
+
 
     def initialize_game_display(self):
         if self.config.fullscreen:
@@ -27,6 +31,7 @@ class Renderer:
         self.graphik.getGameDisplay().fill(self.config.white)
         self.draw_environment()
         self.draw_progress_bar()
+        self.draw_score();
 
     def initialize_location_width_and_height(self):
         x, y = self.graphik.getGameDisplay().get_size()
@@ -84,3 +89,15 @@ class Renderer:
                 self.graphik.getGameDisplay(), self.config.green, (0, y - 20, x * percentage, 20)
             )
         pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20), 1)
+
+    def draw_score(self):
+        # Draw the score
+        font = pygame.font.Font(None, 36)
+        black = (0, 0, 0)
+        level_score = font.render(f"Level Score: {self.game_score.current_points}", True, black)
+        total_score = font.render(f"Total Score: {self.game_score.cumulative_points}", True, black)
+
+        # Position the score in the top-left corner with padding
+        padding = 10
+        self.graphik.gameDisplay.blit(level_score, (padding, padding))
+        self.graphik.gameDisplay.blit(total_score, (padding, padding + 40))  # 40 pixels below the level score

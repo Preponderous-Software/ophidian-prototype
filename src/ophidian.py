@@ -29,7 +29,7 @@ class Ophidian:
         self.snake_part_repository = SnakePartRepository()
         self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(self.level, self.config.grid_size, self.snake_part_repository, self.config)
         self.game_score = GameScore(self.snake_part_repository, self.environment_repository)
-        self.renderer = Renderer(self.collision, self.config, self.environment_repository, self.snake_part_repository)
+        self.renderer = Renderer(self.collision, self.config, self.environment_repository, self.snake_part_repository, self.game_score)  # Added game_score here
         self.initialize()
 
     def check_for_level_progress_and_reinitialize(self):
