@@ -1,6 +1,6 @@
 import pygame
 
-from lib.graphik.src.graphik import Graphik
+from src.lib.graphik.src.graphik import Graphik
 
 
 class Renderer:

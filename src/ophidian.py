@@ -3,13 +3,13 @@ import time
 
 import pygame
 
-from config.config import Config
-from graphics.renderer import Renderer
-from input.keyDownEventHandler import KeyDownEventHandler
-from snake.snakePart import SnakePart
-from snake.snakePartRepository import SnakePartRepository
-from environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepositoryImpl
-from score.game_score import GameScore
+from src.config.config import Config
+from src.graphics.renderer import Renderer
+from src.input.keyDownEventHandler import KeyDownEventHandler
+from src.snake.snakePart import SnakePart
+from src.snake.snakePartRepository import SnakePartRepository
+from src.environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepositoryImpl
+from src.score.game_score import GameScore
 
 
 # @author Daniel McCoy Stephenson

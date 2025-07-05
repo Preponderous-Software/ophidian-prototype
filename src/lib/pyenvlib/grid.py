@@ -2,8 +2,8 @@
 # MIT License
 import random
 import uuid
-from lib.pyenvlib.entity import Entity
-from lib.pyenvlib.location import Location
+from src.lib.pyenvlib.entity import Entity
+from src.lib.pyenvlib.location import Location
 
 
 # @author Daniel McCoy Stephenson
