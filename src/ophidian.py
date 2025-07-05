@@ -9,6 +9,7 @@ from input.keyDownEventHandler import KeyDownEventHandler
 from snake.snakePart import SnakePart
 from snake.snakePartRepository import SnakePartRepository
 from environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepositoryImpl
+from score.game_score import GameScore
 
 
 # @author Daniel McCoy Stephenson
@@ -21,35 +22,15 @@ class Ophidian:
         self.running = True
         self.level = 1
         self.tick = 0
-        self.score = 0
         self.changed_direction_this_tick = False
         self.collision = False
 
         self.config = Config()
         self.snake_part_repository = SnakePartRepository()
         self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(self.level, self.config.grid_size, self.snake_part_repository, self.config)
-        self.renderer = Renderer(self.collision, self.config, self.environment_repository,self.snake_part_repository)
+        self.game_score = GameScore(self.snake_part_repository, self.environment_repository)
+        self.renderer = Renderer(self.collision, self.config, self.environment_repository, self.snake_part_repository)
         self.initialize()
-
-    def calculate_score(self):
-        length = self.snake_part_repository.get_length()
-        num_locations = self.environment_repository.get_num_locations()
-        percentage = int(length / num_locations * 100)
-        self.score = length * percentage
-
-    def display_stats_in_console(self):
-        length = self.snake_part_repository.get_length()
-        num_locations = self.environment_repository.get_num_locations()
-        percentage = int(length / num_locations * 100)
-        print(
-            "The ophidian had a length of",
-            length,
-            "and took up",
-            percentage,
-            "percent of the world.",
-        )
-        print("Score:", self.score)
-        print("-----")
 
     def check_for_level_progress_and_reinitialize(self):
         print("Checking for level progress...")
@@ -71,7 +52,7 @@ class Ophidian:
         self.initialize()
 
     def quit_application(self):
-        self.display_stats_in_console()
+        self.game_score.display_stats()
         pygame.quit()
         quit()
 
@@ -96,7 +77,7 @@ class Ophidian:
 
     def initialize(self):
         self.collision = False
-        self.score = 0
+        self.game_score.reset()
         self.tick = 0
         self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
@@ -137,7 +118,7 @@ class Ophidian:
             if (check_for_level_progress_and_reinitialize):
                 self.check_for_level_progress_and_reinitialize()
 
-            self.calculate_score()
+            self.game_score.calculate()
             self.renderer.draw()
 
             pygame.display.update()
