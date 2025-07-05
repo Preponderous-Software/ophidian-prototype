@@ -2,16 +2,16 @@ import random
 import time
 from typing import Any, Optional
 
-from lib.pyenvlib.environment import Environment
-from lib.pyenvlib.entity import Entity
-from food.food import Food
-from snake.snakePart import SnakePart
-from environment.environmentRepository import EnvironmentRepository
+from src.lib.pyenvlib.environment import Environment
+from src.lib.pyenvlib.entity import Entity
+from src.food.food import Food
+from src.snake.snakePart import SnakePart
+from src.environment.environmentRepository import EnvironmentRepository
 
-from config.config import Config
-from snake.snakePartRepository import SnakePartRepository
+from src.config.config import Config
+from src.snake.snakePartRepository import SnakePartRepository
 
-from lib.pyenvlib.location import Location
+from src.lib.pyenvlib.location import Location
 
 
 class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
