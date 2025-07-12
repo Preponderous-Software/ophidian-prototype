@@ -27,10 +27,8 @@ class Ophidian:
         saved_state = self.state_repository.load()
         if saved_state:
             self.level = saved_state.level
-            self.games_played = saved_state.games_played
         else:
             self.level = 1
-            self.games_played = 0
 
         self.tick = 0
         self.changed_direction_this_tick = False
@@ -64,7 +62,6 @@ class Ophidian:
         """Save current game state"""
         state = {
             'level': self.level,
-            'games_played': self.games_played,
             'current_score': self.game_score.current_points,
             'cumulative_score': self.game_score.cumulative_points
         }
@@ -80,11 +77,8 @@ class Ophidian:
             print("The ophidian has progressed to the next level.")
             self.game_score.level_complete()
             self.level += 1
-            should_increase_grid_size = True
         else:
             self.game_score.reset()
-            self.games_played += 1
-            should_increase_grid_size = None
 
         self.save_game_state()
 
