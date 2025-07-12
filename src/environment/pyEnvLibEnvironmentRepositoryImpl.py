@@ -15,20 +15,21 @@ from src.lib.pyenvlib.location import Location
 
 
 class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
-    def __init__(self, level: int, grid_size: int, snake_part_repository: SnakePartRepository, config: Config) -> None:
-        self.config = config
-        print("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
-        if level == 1:
-            self.environment = Environment(
-                "Level " + str(level), grid_size
-            )
-        else:
-            self.environment = Environment(
-                "Level " + str(level), grid_size + (level - 1) * 2
-            )
-
+    def __init__(self, level: int, snake_part_repository: SnakePartRepository, config: Config) -> None:
+        self.level = level
         self.snake_part_repository = snake_part_repository
-        self.grid_size = grid_size
+        self.config = config
+
+        # Determine grid size based on level
+        if level == 1:
+            grid_size = config.initial_grid_size
+        else:
+            grid_size = config.initial_grid_size + level
+
+        self.environment = Environment(
+            "Level " + str(level), grid_size
+        )
+
         self.collision = False
         self.running = True
 
@@ -248,15 +249,18 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
             self.environment.removeEntity(entity)
         self.snake_part_repository.clear()
 
-    def reinitialize(self, level, should_increase_grid_size):
-        if should_increase_grid_size is None:
-            # Maintain current grid size
-            new_grid_size = min(self.config.min_grid_size + level - 1, self.config.max_grid_size)
-        elif should_increase_grid_size:
-            # Increase grid size for next level
-            new_grid_size = min(self.config.min_grid_size + level - 1, self.config.max_grid_size)
-        else:
-            # Reset to minimum size (should not happen in normal gameplay)
-            new_grid_size = self.config.min_grid_size
+    def reinitialize(self, level):
+        self.level = level
 
-        self.grid_size = new_grid_size
+        # Determine grid size based on level
+        if self.level == 1:
+            grid_size = self.config.initial_grid_size
+        else:
+            grid_size = self.config.initial_grid_size + self.level
+
+        self.environment = Environment(
+            "Level " + str(level), grid_size
+        )
+
+        self.collision = False
+        self.running = True

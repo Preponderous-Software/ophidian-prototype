@@ -40,7 +40,6 @@ class Ophidian:
         self.snake_part_repository = SnakePartRepository()
         self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(
             self.level,
-            self.config.grid_size,
             self.snake_part_repository,
             self.config
         )
@@ -90,7 +89,7 @@ class Ophidian:
         self.save_game_state()
 
         print("Reinitializing the environment...")
-        self.environment_repository.reinitialize(self.level, should_increase_grid_size)
+        self.environment_repository.reinitialize(self.level)
         print("Clearing the environment repository")
         self.environment_repository.clear()
         print("Re-initializing the game")
