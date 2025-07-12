@@ -45,7 +45,6 @@ class Ophidian:
             self.level += 1
             should_increase_grid_size = True
         else:
-            # Self-collision
             self.game_score.reset()
             should_increase_grid_size = False
         print("Reinitializing the environment...")
