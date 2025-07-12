@@ -99,7 +99,6 @@ class Ophidian:
         print("The ophidian enters the world.")
         self.environment_repository.spawn_food()
 
-
     def run(self):
         while self.running:
             for event in pygame.event.get():
