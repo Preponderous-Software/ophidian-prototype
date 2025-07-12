@@ -5,13 +5,17 @@ from src.lib.graphik.src.graphik import Graphik
 
 class Renderer:
 
-    def __init__(self, collision, config, environment_repository, snake_part_repository):
+    def __init__(self, collision, config, environment_repository, snake_part_repository, game_score):
         self.collision = collision
         self.config = config
         self.environment_repository = environment_repository
         self.snake_part_repository = snake_part_repository
+        self.game_score = game_score
         self.initialize_game_display()
         self.graphik = Graphik(self.game_display)
+        self.location_width = 0
+        self.location_height = 0
+
 
     def initialize_game_display(self):
         if self.config.fullscreen:
@@ -27,6 +31,7 @@ class Renderer:
         self.graphik.getGameDisplay().fill(self.config.white)
         self.draw_environment()
         self.draw_progress_bar()
+        self.draw_score();
 
     def initialize_location_width_and_height(self):
         x, y = self.graphik.getGameDisplay().get_size()
@@ -84,3 +89,19 @@ class Renderer:
                 self.graphik.getGameDisplay(), self.config.green, (0, y - 20, x * percentage, 20)
             )
         pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20), 1)
+
+    def draw_score(self):
+        black = (0, 0, 0)
+        score_text = str(self.game_score.current_points) + " | " + str(self.game_score.cumulative_points)
+        score_position = (
+            self.graphik.getGameDisplay().get_size()[0] / 2,
+            self.graphik.getGameDisplay().get_size()[1] - 50,
+        )
+        score_text_size = int(self.config.text_size / 2)
+        self.graphik.drawText(
+            score_text,
+            score_position[0],
+            score_position[1],
+            score_text_size,
+            black
+        )
