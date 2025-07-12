@@ -91,13 +91,17 @@ class Renderer:
         pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20), 1)
 
     def draw_score(self):
-        # Draw the score
-        font = pygame.font.Font(None, 36)
         black = (0, 0, 0)
-        level_score = font.render(f"Level Score: {self.game_score.current_points}", True, black)
-        total_score = font.render(f"Total Score: {self.game_score.cumulative_points}", True, black)
-
-        # Position the score in the top-left corner with padding
-        padding = 10
-        self.graphik.gameDisplay.blit(level_score, (padding, padding))
-        self.graphik.gameDisplay.blit(total_score, (padding, padding + 40))  # 40 pixels below the level score
+        score_text = str(self.game_score.current_points) + " | " + str(self.game_score.cumulative_points)
+        score_position = (
+            self.graphik.getGameDisplay().get_size()[0] / 2,
+            self.graphik.getGameDisplay().get_size()[1] - 50,
+        )
+        score_text_size = int(self.config.text_size / 2)
+        self.graphik.drawText(
+            score_text,
+            score_position[0],
+            score_position[1],
+            score_text_size,
+            black
+        )
