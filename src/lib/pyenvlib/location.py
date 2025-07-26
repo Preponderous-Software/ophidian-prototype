@@ -1,7 +1,7 @@
 # Copyright (c) 2022 Preponderous Software
 # MIT License
 import uuid
-from lib.pyenvlib.entity import Entity
+from src.lib.pyenvlib.entity import Entity
 
 
 # @author Daniel McCoy Stephenson
