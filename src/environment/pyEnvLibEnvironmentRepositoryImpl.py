@@ -24,12 +24,11 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         self.level = level
         self.snake_part_repository = snake_part_repository
         self.config = config
-        logging.info("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
         if level == 1:
             grid_size = config.initial_grid_size
         else:
             grid_size = config.initial_grid_size + level
-
+        logging.info("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
         self.environment = Environment(
             "Level " + str(level), grid_size
         )
