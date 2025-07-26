@@ -18,9 +18,7 @@ class Config:
         self.text_size = 50
 
         # grid size
-        self.grid_size = 5
-        self.min_grid_size = 5
-        self.max_grid_size = 12
+        self.initial_grid_size = 5
 
         # tick speed
         self.limit_tick_speed = True

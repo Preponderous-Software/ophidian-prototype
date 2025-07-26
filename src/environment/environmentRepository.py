@@ -103,6 +103,5 @@ class EnvironmentRepository(ABC):
         pass
 
     @abstractmethod
-    def reinitialize(self, level: int, increase_grid_size: bool) -> None:
-        """Reinitializes the environment with the specified parameters"""
+    def reinitialize(self, level: int) -> None:
         pass

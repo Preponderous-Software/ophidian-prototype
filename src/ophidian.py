@@ -32,10 +32,8 @@ class Ophidian:
         saved_state = self.state_repository.load()
         if saved_state:
             self.level = saved_state.level
-            self.games_played = saved_state.games_played
         else:
             self.level = 1
-            self.games_played = 0
 
         self.tick = 0
         self.changed_direction_this_tick = False
@@ -45,7 +43,6 @@ class Ophidian:
         self.snake_part_repository = SnakePartRepository()
         self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(
             self.level,
-            self.config.grid_size,
             self.snake_part_repository,
             self.config
         )
@@ -70,7 +67,6 @@ class Ophidian:
         """Save current game state"""
         state = {
             'level': self.level,
-            'games_played': self.games_played,
             'current_score': self.game_score.current_points,
             'cumulative_score': self.game_score.cumulative_points
         }
@@ -86,16 +82,13 @@ class Ophidian:
             logging.info("The ophidian has progressed to the next level.")
             self.game_score.level_complete()
             self.level += 1
-            should_increase_grid_size = True
         else:
             self.game_score.reset()
-            self.games_played += 1
-            should_increase_grid_size = None
 
         self.save_game_state()
 
         logging.info("Reinitializing the environment...")
-        self.environment_repository.reinitialize(self.level, should_increase_grid_size)
+        self.environment_repository.reinitialize(self.level)
         logging.info("Clearing the environment repository")
         self.environment_repository.clear()
         logging.info("Re-initializing the game")
@@ -144,7 +137,6 @@ class Ophidian:
         self.snake_part_repository.append(self.selected_snake_part)
         logging.info("The ophidian enters the world.")
         self.environment_repository.spawn_food()
-
 
     def run(self):
         while self.running:
