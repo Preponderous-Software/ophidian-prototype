@@ -1,7 +1,14 @@
 import json
+import logging
+import os
+
 from pathlib import Path
 
 from .game_state import GameState
+
+log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=getattr(logging, log_level))
+logger = logging.getLogger(__name__)
 
 
 class GameStateRepository:
@@ -14,7 +21,7 @@ class GameStateRepository:
             with open(self.file_path, 'w') as f:
                 json.dump(game_state, f)
         except IOError as e:
-            print(f"Could not save game state: {e}")
+            logging.error(f"Could not save game state: {e}")
 
     def load(self):
         """Load game state from JSON file"""
@@ -25,5 +32,5 @@ class GameStateRepository:
                     return GameState.from_dict(data)
             return GameState()  # Return default state if file doesn't exist
         except IOError as e:
-            print(f"Could not load game state: {e}")
+            logging.error(f"Could not load game state: {e}")
             return GameState()  # Return default state on error

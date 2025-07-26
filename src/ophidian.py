@@ -1,5 +1,7 @@
+import os
 import random
 import time
+import logging
 
 import pygame
 
@@ -12,6 +14,9 @@ from src.environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmen
 from src.score.game_score import GameScore
 from src.state.game_state_repository import GameStateRepository
 
+log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=getattr(logging, log_level))
+logger = logging.getLogger(__name__)
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
@@ -68,13 +73,13 @@ class Ophidian:
         self.state_repository.save(state)
 
     def check_for_level_progress_and_reinitialize(self):
-        print("Checking for level progress...")
+        logging.info("Checking for level progress...")
         if (
                 self.snake_part_repository.get_length()
                 > self.environment_repository.get_num_locations()
                 * self.config.level_progress_percentage_required
         ):
-            print("The ophidian has progressed to the next level.")
+            logging.info("The ophidian has progressed to the next level.")
             self.game_score.level_complete()
             self.level += 1
         else:
@@ -82,11 +87,11 @@ class Ophidian:
 
         self.save_game_state()
 
-        print("Reinitializing the environment...")
+        logging.info("Reinitializing the environment...")
         self.environment_repository.reinitialize(self.level)
-        print("Clearing the environment repository")
+        logging.info("Clearing the environment repository")
         self.environment_repository.clear()
-        print("Re-initializing the game")
+        logging.info("Re-initializing the game")
         self.initialize()
 
     def quit_application(self):
@@ -101,17 +106,17 @@ class Ophidian:
         )
         result = key_down_event_handler.handle_key_down_event(key)
         if result == "quit":
-            print("Quiting the application...")
+            logging.info("Quiting the application...")
             self.quit_application()
             return None
         elif result == "restart":
-            print("Restarting the game...")
+            logging.info("Restarting the game...")
             # Reset score when manually restarting
             self.game_score.reset()
             self.check_for_level_progress_and_reinitialize()
             return "restart"
         elif result == "initialize game display":
-            print("Re-initializing the game display...")
+            logging.info("Re-initializing the game display...")
             self.renderer.initialize_game_display()
             return None
         return None
@@ -130,7 +135,7 @@ class Ophidian:
         )
         self.environment_repository.add_entity_to_random_location(self.selected_snake_part)
         self.snake_part_repository.append(self.selected_snake_part)
-        print("The ophidian enters the world.")
+        logging.info("The ophidian enters the world.")
         self.environment_repository.spawn_food()
 
     def run(self):
