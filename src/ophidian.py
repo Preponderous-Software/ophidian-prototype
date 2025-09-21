@@ -43,8 +43,8 @@ class Ophidian:
         self.snake_part_repository = SnakePartRepository()
         self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(
             self.level,
-            self.snake_part_repository,
-            self.config
+            self.config,
+            self.snake_part_repository
         )
         self.game_score = GameScore(self.snake_part_repository, self.environment_repository)
         # Load saved state or use defaults
