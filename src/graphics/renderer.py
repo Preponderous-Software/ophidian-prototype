@@ -31,7 +31,7 @@ class Renderer:
         self.graphik.getGameDisplay().fill(self.config.white)
         self.draw_environment()
         self.draw_progress_bar()
-        self.draw_score();
+        self.draw_score()
 
     def initialize_location_width_and_height(self):
         x, y = self.graphik.getGameDisplay().get_size()
