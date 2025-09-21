@@ -222,7 +222,7 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         food_color = food.getColor()
         self.remove_entity_from_location(food)
         self.spawn_food()
-        self.spawn_snake_part(entity.getTail(), food_color)
+        self.spawn_snake_part(entity.getTail(), self.config.generate_green_shade())
         return check_for_level_progress_and_reinitialize
 
     def move_previous_snake_part(self, snake_part: SnakePart) -> None:

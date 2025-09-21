@@ -127,11 +127,7 @@ class Ophidian:
         self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selected_snake_part = SnakePart(
-            (
-                random.randrange(50, 200),
-                random.randrange(50, 200),
-                random.randrange(50, 200),
-            )
+            self.config.generate_green_shade()
         )
         self.environment_repository.add_entity_to_random_location(self.selected_snake_part)
         self.snake_part_repository.append(self.selected_snake_part)
