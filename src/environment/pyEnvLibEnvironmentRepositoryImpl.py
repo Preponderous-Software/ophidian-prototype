@@ -20,10 +20,10 @@ logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger(__name__)
 
 class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
-    def __init__(self, level: int, snake_part_repository: SnakePartRepository, config: Config) -> None:
+    def __init__(self, level: int, config: Config, snake_part_repository: SnakePartRepository) -> None:
         self.level = level
-        self.snake_part_repository = snake_part_repository
         self.config = config
+        self.snake_part_repository = snake_part_repository
         if level == 1:
             grid_size = config.initial_grid_size
         else:
