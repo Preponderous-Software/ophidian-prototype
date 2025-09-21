@@ -24,7 +24,7 @@ class TestSnakePartRepository(unittest.TestCase):
         self.assertIn(snake_part, self.repository.snake_parts)
 
     def test_append_multiple_snake_parts(self):
-         # Arrange
+        # Arrange
         snake_part = SnakePart("blue")
         snake_part2 = SnakePart("red")
 
