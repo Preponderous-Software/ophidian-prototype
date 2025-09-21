@@ -106,9 +106,9 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         if param == 0:
             return self.environment.getGrid().getUp(location_of_snake_part)
         elif param == 1:
-            return self.environment.getGrid().getDown(location_of_snake_part)
-        elif param == 2:
             return self.environment.getGrid().getLeft(location_of_snake_part)
+        elif param == 2:
+            return self.environment.getGrid().getDown(location_of_snake_part)
         elif param == 3:
             return self.environment.getGrid().getRight(location_of_snake_part)
         else:
