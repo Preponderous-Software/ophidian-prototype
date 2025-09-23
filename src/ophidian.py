@@ -25,8 +25,7 @@ logger = logging.getLogger(__name__)
 class Ophidian:
     def __init__(self):
         pygame.init()
-        pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
-
+        
         self.running = True
         self.current_state = MenuState.MAIN_MENU
         self.state_repository = GameStateRepository()
@@ -34,6 +33,14 @@ class Ophidian:
         
         # Initialize display for menu
         self.game_display = self.initialize_game_display()
+        
+        # Set icon after display is initialized
+        try:
+            pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
+        except (pygame.error, FileNotFoundError):
+            pass  # Icon loading is optional
+        
+        pygame.display.set_caption("Ophidian")
         
         # Initialize menu systems
         self.main_menu = MainMenu(self.config, self.game_display)
@@ -288,5 +295,6 @@ class Ophidian:
             self.changed_direction_this_tick = False
 
 
-ophidian = Ophidian()
-ophidian.run()
+if __name__ == "__main__":
+    ophidian = Ophidian()
+    ophidian.run()
