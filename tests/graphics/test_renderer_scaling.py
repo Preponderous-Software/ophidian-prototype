@@ -129,6 +129,47 @@ class TestRendererScaling(unittest.TestCase):
                 expected_size = available_height / 5  # 5x5 grid
                 self.assertEqual(self.renderer.location_width, expected_size)
 
+    def test_minimum_window_size_handling(self):
+        """Test scaling behavior with very small windows"""
+        # Mock a very small window
+        self.renderer.graphik.gameDisplay = Mock()
+        self.renderer.graphik.gameDisplay.get_size.return_value = (200, 200)
+        
+        # Initialize scaling
+        self.renderer.initialize_location_width_and_height()
+        
+        # Available height = 200 - 70 = 130
+        # Cell size = 130 / 5 = 26
+        expected_cell_size = 26.0
+        
+        self.assertEqual(self.renderer.location_width, expected_cell_size)
+        self.assertEqual(self.renderer.location_height, expected_cell_size)
+        
+        # Verify the game area is calculated correctly even with small cells
+        # Game area width = 5 * 26 = 130
+        # Offset = (200 - 130) / 2 = 35
+        expected_offset_x = 35.0
+        self.assertEqual(self.renderer.game_area_offset_x, expected_offset_x)
+
+    def test_negative_offset_handling(self):
+        """Test that negative offsets are handled correctly for narrow windows"""
+        # Mock a very narrow window where game area exceeds window width
+        self.renderer.graphik.gameDisplay = Mock()
+        self.renderer.graphik.gameDisplay.get_size.return_value = (300, 800)
+        
+        # Initialize scaling
+        self.renderer.initialize_location_width_and_height()
+        
+        # Available height = 800 - 70 = 730
+        # Cell size = 730 / 5 = 146
+        expected_cell_size = 146.0
+        
+        # Game area width = 5 * 146 = 730
+        # Window width = 300
+        # Offset = (300 - 730) / 2 = -215 (negative offset is OK)
+        expected_offset_x = -215.0
+        self.assertEqual(self.renderer.game_area_offset_x, expected_offset_x)
+
     def tearDown(self):
         """Clean up after tests"""
         pygame.quit()
