@@ -1,7 +1,6 @@
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
 
-import random
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
@@ -29,11 +28,3 @@ class Config:
         self.debug = False
         self.restart_upon_collision = True
         self.level_progress_percentage_required = 0.25
-
-    def generate_green_shade(self):
-        """Generate a random shade of green for snake parts."""
-        # Keep red component low (0-50), vary green (100-255), keep blue low (0-100)
-        red = random.randint(0, 50)
-        green = random.randint(100, 255)
-        blue = random.randint(0, 100)
-        return (red, green, blue)

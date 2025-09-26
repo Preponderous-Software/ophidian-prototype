@@ -1,15 +1,12 @@
 import unittest
 
-from src.config.config import Config
+from src.snake.snakeColorGenerator import SnakeColorGenerator
 
 
-class TestConfig(unittest.TestCase):
-    def setUp(self):
-        self.config = Config()
-
+class TestSnakeColorGenerator(unittest.TestCase):
     def test_generate_green_shade_returns_tuple(self):
         # Act
-        color = self.config.generate_green_shade()
+        color = SnakeColorGenerator.generate_green_shade()
         
         # Assert
         self.assertIsInstance(color, tuple)
@@ -18,7 +15,7 @@ class TestConfig(unittest.TestCase):
     def test_generate_green_shade_has_correct_ranges(self):
         # Act & Assert - test multiple times to check randomness
         for _ in range(10):
-            color = self.config.generate_green_shade()
+            color = SnakeColorGenerator.generate_green_shade()
             red, green, blue = color
             
             # Red should be low (0-50)
@@ -36,7 +33,7 @@ class TestConfig(unittest.TestCase):
     def test_generate_green_shade_produces_green_dominant_colors(self):
         # Act & Assert - test that green is always the dominant component
         for _ in range(10):
-            color = self.config.generate_green_shade()
+            color = SnakeColorGenerator.generate_green_shade()
             red, green, blue = color
             
             # Green should be greater than or equal to red and blue

@@ -10,6 +10,7 @@ from src.graphics.renderer import Renderer
 from src.input.keyDownEventHandler import KeyDownEventHandler
 from src.snake.snakePart import SnakePart
 from src.snake.snakePartRepository import SnakePartRepository
+from src.snake.snakeColorGenerator import SnakeColorGenerator
 from src.environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepositoryImpl
 from src.score.game_score import GameScore
 from src.state.game_state_repository import GameStateRepository
@@ -127,7 +128,7 @@ class Ophidian:
         self.renderer.initialize_location_width_and_height()
         pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selected_snake_part = SnakePart(
-            self.config.generate_green_shade()
+            SnakeColorGenerator.generate_green_shade()
         )
         self.environment_repository.add_entity_to_random_location(self.selected_snake_part)
         self.snake_part_repository.append(self.selected_snake_part)
