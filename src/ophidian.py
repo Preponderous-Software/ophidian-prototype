@@ -177,6 +177,8 @@ class Ophidian:
                     self.handle_mouse_motion_based_on_state(event.pos)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_mouse_click_based_on_state(event.pos)
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    self.handle_mouse_release_based_on_state()
                 elif event.type == pygame.WINDOWRESIZED:
                     # Update current window size for all states
                     self.current_window_size = self.game_display.get_size()
@@ -223,6 +225,8 @@ class Ophidian:
         """Handle mouse motion based on current state"""
         if self.current_state == MenuState.MAIN_MENU:
             self.main_menu.handle_mouse_motion(pos)
+        elif self.current_state == MenuState.OPTIONS:
+            self.options_menu.handle_mouse_motion(pos)
 
     def handle_mouse_click_based_on_state(self, pos):
         """Handle mouse clicks based on current state"""
@@ -238,6 +242,11 @@ class Ophidian:
             new_state = self.high_scores_menu.handle_mouse_click(pos)
             if new_state:
                 self.change_state(new_state)
+
+    def handle_mouse_release_based_on_state(self):
+        """Handle mouse release based on current state"""
+        if self.current_state == MenuState.OPTIONS:
+            self.options_menu.handle_mouse_release()
 
     def change_state(self, new_state):
         """Change the current state and handle transitions"""
