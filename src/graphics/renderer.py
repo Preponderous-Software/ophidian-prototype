@@ -31,6 +31,7 @@ class Renderer:
 
     def draw(self):
         self.graphik.getGameDisplay().fill(self.config.white)
+        self.draw_game_area_background()
         self.draw_environment()
         self.draw_progress_bar()
         self.draw_score()
@@ -58,6 +59,29 @@ class Renderer:
         self.location_width = cell_size
         self.location_height = cell_size
     
+    def draw_game_area_background(self):
+        """Draw a distinct background for the game area to make it clearly visible"""
+        # Calculate game area dimensions
+        game_area_width = self.environment_repository.get_rows() * self.location_width
+        game_area_height = self.environment_repository.get_columns() * self.location_height
+        
+        # Draw a subtle gray background for the game area
+        light_gray = (240, 240, 240)
+        pygame.draw.rect(
+            self.graphik.getGameDisplay(), 
+            light_gray, 
+            (self.game_area_offset_x, self.game_area_offset_y, game_area_width, game_area_height)
+        )
+        
+        # Draw a border around the game area
+        border_color = (200, 200, 200)
+        pygame.draw.rect(
+            self.graphik.getGameDisplay(), 
+            border_color, 
+            (self.game_area_offset_x - 2, self.game_area_offset_y - 2, game_area_width + 4, game_area_height + 4), 
+            2
+        )
+
     # Draws the environment in its entirety.
     def draw_environment(self):
         for locationId in self.environment_repository.get_locations():

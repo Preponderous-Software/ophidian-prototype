@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import Mock, MagicMock
+import unittest.mock
 import pygame
 
 from src.graphics.renderer import Renderer
@@ -150,6 +151,30 @@ class TestRendererScaling(unittest.TestCase):
         # Offset = (200 - 130) / 2 = 35
         expected_offset_x = 35.0
         self.assertEqual(self.renderer.game_area_offset_x, expected_offset_x)
+
+    def test_game_area_background_drawing(self):
+        """Test that game area background and border are drawn correctly"""
+        # Mock a window
+        self.renderer.graphik.gameDisplay = Mock()
+        self.renderer.graphik.gameDisplay.get_size.return_value = (800, 600)
+        
+        # Initialize scaling
+        self.renderer.initialize_location_width_and_height()
+        
+        # Mock pygame.draw.rect to capture drawing calls
+        with unittest.mock.patch('pygame.draw.rect') as mock_draw_rect:
+            self.renderer.draw_game_area_background()
+            
+            # Should have been called twice: once for background, once for border
+            self.assertEqual(mock_draw_rect.call_count, 2)
+            
+            # Verify background call (light gray background)
+            background_call = mock_draw_rect.call_args_list[0]
+            self.assertEqual(background_call[0][1], (240, 240, 240))  # Light gray color
+            
+            # Verify border call (darker gray border)
+            border_call = mock_draw_rect.call_args_list[1]
+            self.assertEqual(border_call[0][1], (200, 200, 200))  # Border color
 
     def test_negative_offset_handling(self):
         """Test that negative offsets are handled correctly for narrow windows"""
