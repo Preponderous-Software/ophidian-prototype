@@ -18,6 +18,7 @@ from src.environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmen
 from src.score.game_score import GameScore
 from src.state.game_state_repository import GameStateRepository
 from src.state.menu_state import MenuState
+from src.audio.audio_manager import AudioManager
 
 log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
 logging.basicConfig(level=getattr(logging, log_level))
@@ -50,6 +51,13 @@ class Ophidian:
         self.main_menu = MainMenu(self.config, self.game_display)
         self.options_menu = OptionsMenu(self.config, self.game_display)
         self.high_scores_menu = HighScoresMenu(self.config, self.game_display)
+        
+        # Initialize audio manager
+        self.audio_manager = AudioManager(self.config)
+        
+        # Set up audio update callback for options menu
+        self.options_menu.set_audio_update_callback(self.update_audio_settings)
+        self.options_menu.set_resolution_change_callback(self.handle_resolution_change)
         
         # Game-related initialization (moved to initialize_game method)
         self.level = 1
@@ -130,9 +138,15 @@ class Ophidian:
                 * self.config.level_progress_percentage_required
         ):
             logging.info("The ophidian has progressed to the next level.")
+            # Play level complete sound
+            if hasattr(self, 'audio_manager'):
+                self.audio_manager.play_sound_effect("level_complete")
             self.game_score.level_complete()
             self.level += 1
         else:
+            # Play collision/death sound
+            if hasattr(self, 'audio_manager'):
+                self.audio_manager.play_sound_effect("collision")
             self.game_score.reset()
 
         self.save_game_state()
@@ -148,8 +162,36 @@ class Ophidian:
         self.save_game_state()
         if self.game_score is not None:
             self.game_score.display_stats()
+        
+        # Clean up audio
+        if hasattr(self, 'audio_manager'):
+            self.audio_manager.cleanup()
+            
         pygame.quit()
         quit()
+    
+    def update_audio_settings(self):
+        """Update audio manager when settings change"""
+        if hasattr(self, 'audio_manager'):
+            self.audio_manager.update_volumes()
+    
+    def handle_resolution_change(self):
+        """Handle resolution changes from options menu"""
+        # Update current window size
+        self.current_window_size = (self.config.display_width, self.config.display_height)
+        
+        # Reinitialize the game display with new resolution
+        self.game_display = self.initialize_game_display()
+        
+        # Update menu references to new display
+        self.main_menu.game_display = self.game_display
+        self.options_menu.game_display = self.game_display
+        self.high_scores_menu.game_display = self.game_display
+        
+        # Update renderer if in game
+        if self.renderer:
+            self.renderer.graphik.gameDisplay = self.game_display
+            self.renderer.initialize_location_width_and_height()
 
     def initialize(self):
         self.collision = False
@@ -250,6 +292,10 @@ class Ophidian:
 
     def change_state(self, new_state):
         """Change the current state and handle transitions"""
+        # Play menu navigation sound
+        if hasattr(self, 'audio_manager'):
+            self.audio_manager.play_sound_effect("menu_select")
+            
         if new_state == MenuState.GAME and self.current_state != MenuState.GAME:
             # Initialize game when transitioning to game state
             self.initialize_game()
@@ -304,7 +350,18 @@ class Ophidian:
         self.renderer.draw()
 
         if self.config.limit_tick_speed:
-            time.sleep(self.config.tick_speed)
+            # Apply difficulty-based speed modification
+            base_tick_speed = self.config.tick_speed
+            if self.config.difficulty == "Easy":
+                # Slower speed = easier
+                tick_speed = base_tick_speed * 1.5
+            elif self.config.difficulty == "Hard":
+                # Faster speed = harder
+                tick_speed = base_tick_speed * 0.6
+            else:  # Normal
+                tick_speed = base_tick_speed
+                
+            time.sleep(tick_speed)
             self.tick += 1
             self.changed_direction_this_tick = False
 

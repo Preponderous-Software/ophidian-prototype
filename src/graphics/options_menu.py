@@ -318,6 +318,7 @@ class OptionsMenu:
         # Handle resolution change
         resolutions = self.config.get_available_resolutions()
         selected_res = resolutions[self.resolution_dropdown.get_selected_index()]
+        old_width, old_height = self.config.display_width, self.config.display_height
         self.config.display_width, self.config.display_height = selected_res
         
         # Save settings to file
@@ -325,6 +326,13 @@ class OptionsMenu:
         
         self.settings_changed = False
         self.store_original_settings()  # Update original settings after apply
+        
+        # Notify parent to update audio volumes if available
+        self._notify_audio_update()
+        
+        # Notify if resolution changed
+        if (old_width, old_height) != selected_res:
+            self._notify_resolution_change()
     
     def cancel_settings(self):
         """Cancel changes and restore original settings"""
@@ -445,11 +453,12 @@ class OptionsMenu:
         )
         
         # Draw category headers with dynamic positioning
-        header_size = max(20, min(40, int(self.config.text_size // 2 * (current_width / 800))))
+        header_size = max(16, min(32, int(self.config.text_size // 3 * (current_width / 800))))
         header_y = 120
         
         if current_width < 800:
             # Single column layout - center headers above their sections
+            # Use smaller header size and better spacing for small screens
             self.graphik.drawText(
                 "Sound Settings",
                 current_width // 2,
@@ -458,17 +467,26 @@ class OptionsMenu:
                 self.config.yellow
             )
             
+            # Calculate dynamic position for second header based on actual control positions
+            display_header_y = max(header_y + 200, self.fullscreen_toggle.y - 30)
             self.graphik.drawText(
                 "Display & Game Settings", 
                 current_width // 2,
-                header_y + 240,  # Below sound settings
+                display_header_y,
                 header_size,
                 self.config.yellow
             )
         else:
-            # Two column layout - position headers above columns
-            left_header_x = current_width // 2 - 200
-            right_header_x = current_width // 2 + 100
+            # Two column layout - position headers above columns with better spacing
+            # Calculate header positions based on actual control positions
+            left_header_x = self.master_volume_slider.x + self.master_volume_slider.width // 2
+            right_header_x = self.fullscreen_toggle.x + 100  # Offset for better centering
+            
+            # Ensure headers don't overlap or go off screen
+            min_spacing = 150
+            if right_header_x - left_header_x < min_spacing:
+                left_header_x = current_width // 2 - min_spacing // 2
+                right_header_x = current_width // 2 + min_spacing // 2
             
             self.graphik.drawText(
                 "Sound Settings",
@@ -511,3 +529,21 @@ class OptionsMenu:
                 instruction_size,
                 self.config.yellow
             )
+    
+    def set_audio_update_callback(self, callback):
+        """Set callback function to notify when audio settings change"""
+        self.audio_update_callback = callback
+    
+    def set_resolution_change_callback(self, callback):
+        """Set callback function to notify when resolution changes"""
+        self.resolution_change_callback = callback
+    
+    def _notify_audio_update(self):
+        """Notify parent component about audio setting changes"""
+        if hasattr(self, 'audio_update_callback') and self.audio_update_callback:
+            self.audio_update_callback()
+    
+    def _notify_resolution_change(self):
+        """Notify parent component about resolution changes"""
+        if hasattr(self, 'resolution_change_callback') and self.resolution_change_callback:
+            self.resolution_change_callback()
