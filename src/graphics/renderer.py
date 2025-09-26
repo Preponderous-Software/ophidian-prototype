@@ -15,6 +15,8 @@ class Renderer:
         self.graphik = Graphik(self.game_display)
         self.location_width = 0
         self.location_height = 0
+        self.game_area_offset_x = 0
+        self.game_area_offset_y = 0
 
 
     def initialize_game_display(self):
@@ -35,8 +37,26 @@ class Renderer:
 
     def initialize_location_width_and_height(self):
         x, y = self.graphik.getGameDisplay().get_size()
-        self.location_width = x / self.environment_repository.get_rows()
-        self.location_height = y / self.environment_repository.get_columns()
+        
+        # Calculate proportional scaling based on window height
+        # Reserve space for progress bar (20 pixels) and score (50 pixels)
+        available_height = y - 70
+        
+        # Use the smaller dimension to maintain square grid cells
+        grid_size = max(self.environment_repository.get_rows(), self.environment_repository.get_columns())
+        cell_size = available_height / grid_size
+        
+        # Calculate the actual game area dimensions
+        game_area_width = self.environment_repository.get_rows() * cell_size
+        game_area_height = self.environment_repository.get_columns() * cell_size
+        
+        # Center the game area horizontally
+        self.game_area_offset_x = (x - game_area_width) / 2
+        self.game_area_offset_y = 0  # Align to top, leaving space for UI at bottom
+        
+        # Set uniform location dimensions for square cells
+        self.location_width = cell_size
+        self.location_height = cell_size
     
     # Draws the environment in its entirety.
     def draw_environment(self):
@@ -44,8 +64,8 @@ class Renderer:
             location = self.environment_repository.get_location_by_id(locationId)
             self.draw_location(
                 location,
-                location.getX() * self.location_width - 1,
-                location.getY() * self.location_height - 1,
+                self.game_area_offset_x + location.getX() * self.location_width - 1,
+                self.game_area_offset_y + location.getY() * self.location_height - 1,
                 self.location_width + 2,
                 self.location_height + 2,
             )
