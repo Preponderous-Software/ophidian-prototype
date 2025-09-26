@@ -57,12 +57,18 @@ class MainMenu:
     def handle_mouse_motion(self, pos):
         """Handle mouse movement for menu highlighting"""
         x, y = pos
-        menu_start_y = self.config.display_height // 2 - 50
+        try:
+            current_width, current_height = self.game_display.get_size()
+        except (AttributeError, ValueError):
+            # Fallback to config values for testing
+            current_width, current_height = self.config.display_width, self.config.display_height
+        
+        menu_start_y = current_height // 2 - 50
         
         for i, item in enumerate(self.menu_items):
             item_y = menu_start_y + i * 80
-            if (self.config.display_width // 2 - item.width // 2 <= x <= 
-                self.config.display_width // 2 + item.width // 2 and
+            if (current_width // 2 - item.width // 2 <= x <= 
+                current_width // 2 + item.width // 2 and
                 item_y <= y <= item_y + item.height):
                 if self.selected_index != i:
                     self.selected_index = i
@@ -72,12 +78,18 @@ class MainMenu:
     def handle_mouse_click(self, pos):
         """Handle mouse clicks on menu items"""
         x, y = pos
-        menu_start_y = self.config.display_height // 2 - 50
+        try:
+            current_width, current_height = self.game_display.get_size()
+        except (AttributeError, ValueError):
+            # Fallback to config values for testing
+            current_width, current_height = self.config.display_width, self.config.display_height
+        
+        menu_start_y = current_height // 2 - 50
         
         for i, item in enumerate(self.menu_items):
             item_y = menu_start_y + i * 80
-            if (self.config.display_width // 2 - item.width // 2 <= x <= 
-                self.config.display_width // 2 + item.width // 2 and
+            if (current_width // 2 - item.width // 2 <= x <= 
+                current_width // 2 + item.width // 2 and
                 item_y <= y <= item_y + item.height):
                 return item.action
         
@@ -85,14 +97,21 @@ class MainMenu:
 
     def draw(self):
         """Draw the main menu"""
+        # Get current window size for dynamic rendering
+        try:
+            current_width, current_height = self.game_display.get_size()
+        except (AttributeError, ValueError):
+            # Fallback to config values for testing
+            current_width, current_height = self.config.display_width, self.config.display_height
+        
         # Clear screen with black background
         self.game_display.fill(self.config.black)
         
         # Draw title
-        title_y = self.config.display_height // 2 - 150
+        title_y = current_height // 2 - 150
         self.graphik.drawText(
             "OPHIDIAN",
-            self.config.display_width // 2,
+            current_width // 2,
             title_y,
             self.config.text_size + 20,
             self.config.green
@@ -102,17 +121,17 @@ class MainMenu:
         subtitle_y = title_y + 80
         self.graphik.drawText(
             "Snake Game",
-            self.config.display_width // 2,
+            current_width // 2,
             subtitle_y,
             self.config.text_size // 2,
             self.config.white
         )
         
         # Draw menu items
-        menu_start_y = self.config.display_height // 2 - 50
+        menu_start_y = current_height // 2 - 50
         
         for i, item in enumerate(self.menu_items):
-            item_x = self.config.display_width // 2 - item.width // 2
+            item_x = current_width // 2 - item.width // 2
             item_y = menu_start_y + i * 80
             
             # Choose colors based on selection
@@ -130,7 +149,7 @@ class MainMenu:
             # Draw text
             self.graphik.drawText(
                 item.text,
-                self.config.display_width // 2,
+                current_width // 2,
                 item_y + item.height // 2,
                 self.config.text_size // 2,
                 text_color
