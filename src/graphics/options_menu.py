@@ -417,7 +417,8 @@ class OptionsMenu:
     def handle_mouse_click(self, pos):
         """Handle mouse clicks on controls"""
         for i, control in enumerate(self.controls):
-            if control.handle_mouse_click(pos):
+            result = control.handle_mouse_click(pos)
+            if result:
                 # Update focus to clicked control
                 if self.controls:
                     self.controls[self.current_control_index].focused = False
@@ -426,15 +427,10 @@ class OptionsMenu:
                 
                 # Handle button return values
                 if isinstance(control, Button):
-                    # For non-back buttons, mark settings as potentially changed
-                    if control != self.back_button:
-                        # Don't mark as changed for apply/cancel as they handle their own state
-                        pass
-                    # Check if the button callback returned a state
-                    if control.callback:
-                        result = control.callback()
-                        if result is not None:
-                            return result
+                    # Button's handle_mouse_click already called the callback
+                    # and returned the result, so we use that result
+                    if result is not True:  # True means clicked but no state change
+                        return result
                 else:
                     # For other controls, mark settings as changed
                     self.settings_changed = True
