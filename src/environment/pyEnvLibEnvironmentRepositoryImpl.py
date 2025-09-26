@@ -25,11 +25,24 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         self.level = level
         self.config = config
         self.snake_part_repository = snake_part_repository
+        
+        # Adjust game parameters based on difficulty
+        base_grid_size = config.initial_grid_size
         if level == 1:
-            grid_size = config.initial_grid_size
+            grid_size = base_grid_size
         else:
-            grid_size = config.initial_grid_size + level
-        logging.info("Initializing environment repository for level " + str(level) + " with grid size " + str(grid_size))
+            grid_size = base_grid_size + level
+            
+        # Apply difficulty modifiers
+        if config.difficulty == "Easy":
+            # Larger grid = easier game
+            grid_size = max(5, int(grid_size * 1.3))
+        elif config.difficulty == "Hard":
+            # Smaller grid = harder game (but ensure minimum of 4 for Hard)
+            grid_size = max(4, int(grid_size * 0.7))
+        # Normal difficulty uses default grid size
+        
+        logging.info(f"Initializing environment repository for level {level} with grid size {grid_size} (difficulty: {config.difficulty})")
         self.environment = Environment(
             "Level " + str(level), grid_size
         )
