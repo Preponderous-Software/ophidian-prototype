@@ -27,13 +27,17 @@ class TestRendererScaling(unittest.TestCase):
         self.snake_part_repository = Mock()
         self.game_score = Mock()
         
+        # Mock game display
+        self.game_display = Mock()
+        
         # Create renderer instance
         self.renderer = Renderer(
             self.collision,
             self.config,
             self.environment_repository,
             self.snake_part_repository,
-            self.game_score
+            self.game_score,
+            self.game_display
         )
 
     def test_proportional_scaling_square_window(self):

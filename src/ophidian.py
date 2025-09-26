@@ -107,7 +107,8 @@ class Ophidian:
             self.config,
             self.environment_repository,
             self.snake_part_repository,
-            self.game_score
+            self.game_score,
+            self.game_display  # Pass the existing game display
         )
         self.initialize()
 
@@ -270,7 +271,7 @@ class Ophidian:
             self.check_for_level_progress_and_reinitialize()
         elif result == "initialize game display":
             logging.info("Re-initializing the game display...")
-            self.renderer.initialize_game_display()
+            self.renderer.initialize_location_width_and_height()
 
     def run_game_loop(self):
         """Run one iteration of the game loop"""
