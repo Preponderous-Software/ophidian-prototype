@@ -3,6 +3,7 @@
 
 import json
 import os
+import pygame
 
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
@@ -35,6 +36,17 @@ class Config:
 
         # difficulty settings
         self.difficulty = "Normal"  # Easy, Normal, Hard
+        
+        # key bindings
+        self.key_bindings = {
+            'move_up': pygame.K_w,
+            'move_down': pygame.K_s,
+            'move_left': pygame.K_a,
+            'move_right': pygame.K_d,
+            'fullscreen': pygame.K_F11,
+            'restart': pygame.K_r,
+            'quit': pygame.K_q
+        }
 
         # misc
         self.debug = False
@@ -71,7 +83,8 @@ class Config:
             'tick_speed': self.tick_speed,
             'difficulty': self.difficulty,
             'initial_grid_size': self.initial_grid_size,
-            'level_progress_percentage_required': self.level_progress_percentage_required
+            'level_progress_percentage_required': self.level_progress_percentage_required,
+            'key_bindings': self.key_bindings
         }
         
         try:
@@ -98,6 +111,12 @@ class Config:
             self.difficulty = settings.get('difficulty', self.difficulty)
             self.initial_grid_size = settings.get('initial_grid_size', self.initial_grid_size)
             self.level_progress_percentage_required = settings.get('level_progress_percentage_required', self.level_progress_percentage_required)
+            
+            # Load key bindings, ensuring they are valid pygame key constants
+            saved_bindings = settings.get('key_bindings', {})
+            for key, value in saved_bindings.items():
+                if key in self.key_bindings and isinstance(value, int):
+                    self.key_bindings[key] = value
         except (FileNotFoundError, json.JSONDecodeError):
             # File doesn't exist or is invalid, use defaults
             pass
