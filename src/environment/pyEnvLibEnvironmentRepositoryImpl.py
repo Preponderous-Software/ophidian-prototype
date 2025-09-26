@@ -8,6 +8,7 @@ from src.lib.pyenvlib.environment import Environment
 from src.lib.pyenvlib.entity import Entity
 from src.food.food import Food
 from src.snake.snakePart import SnakePart
+from src.snake.snakeColorGenerator import SnakeColorGenerator
 from src.environment.environmentRepository import EnvironmentRepository
 
 from src.config.config import Config
@@ -222,7 +223,7 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         food_color = food.getColor()
         self.remove_entity_from_location(food)
         self.spawn_food()
-        self.spawn_snake_part(entity.getTail(), food_color)
+        self.spawn_snake_part(entity.getTail(), SnakeColorGenerator.generate_green_shade())
         return check_for_level_progress_and_reinitialize
 
     def move_previous_snake_part(self, snake_part: SnakePart) -> None:

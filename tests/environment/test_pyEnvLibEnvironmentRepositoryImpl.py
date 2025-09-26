@@ -15,8 +15,9 @@ class TestPyEnvLibEnvironmentRepositoryImpl(unittest.TestCase):
         self.mock_config = MagicMock(spec=Config)
         self.mock_config.tick_speed = 0.1
         self.mock_config.restart_upon_collision = True
+        self.mock_config.initial_grid_size = 5
         self.mock_snake_part_repository = MagicMock(spec=SnakePartRepository)
-        self.repository = PyEnvLibEnvironmentRepositoryImpl(1, 10, self.mock_snake_part_repository, self.mock_config)
+        self.repository = PyEnvLibEnvironmentRepositoryImpl(1, self.mock_config, self.mock_snake_part_repository)
 
     def test_get_rows(self):
         # Arrange
