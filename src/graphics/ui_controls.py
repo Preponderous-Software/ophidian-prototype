@@ -234,41 +234,86 @@ class Dropdown(UIControl):
 
 
 class Button(UIControl):
-    """Button control"""
+    """Button control with enhanced visual feedback"""
     def __init__(self, x, y, width, height, text, callback=None):
         super().__init__(x, y, width, height)
         self.text = text
         self.callback = callback
-    
+        self.pressed = False
+        self.hovered = False
+        self.click_time = 0
+        
     def handle_mouse_click(self, pos):
         if self.rect.collidepoint(pos):
+            self.pressed = True
+            self.click_time = pygame.time.get_ticks()
             if self.callback:
-                self.callback()
+                result = self.callback()
+                return result if result is not None else True
             return True
         return False
+    
+    def handle_mouse_motion(self, pos):
+        """Handle mouse hover for visual feedback"""
+        was_hovered = self.hovered
+        self.hovered = self.rect.collidepoint(pos)
+        return was_hovered != self.hovered
     
     def handle_key_down(self, key):
         if not self.focused:
             return False
             
         if key == pygame.K_SPACE or key == pygame.K_RETURN:
+            self.pressed = True
+            self.click_time = pygame.time.get_ticks()
             if self.callback:
-                self.callback()
+                result = self.callback()
+                return result if result is not None else True
             return True
         return False
     
     def draw(self, surface, graphik, config):
-        # Draw button background
-        bg_color = config.green if self.focused else config.white
-        text_color = config.black if self.focused else config.black
+        # Calculate visual state
+        current_time = pygame.time.get_ticks()
+        if self.pressed and current_time - self.click_time < 150:  # 150ms press effect
+            # Pressed state - darker background
+            if self.focused:
+                bg_color = config.green
+                text_color = config.white
+            else:
+                bg_color = config.gray
+                text_color = config.white
+        elif self.focused:
+            # Focused state - bright background
+            bg_color = config.green
+            text_color = config.black
+        elif self.hovered:
+            # Hovered state - light highlight
+            bg_color = config.white
+            text_color = config.black
+        else:
+            # Normal state
+            bg_color = config.white
+            text_color = config.black
         
+        # Draw button with border for better visibility
+        border_color = config.green if self.focused else config.gray
+        
+        # Draw border
+        graphik.drawRectangle(self.x - 1, self.y - 1, self.width + 2, self.height + 2, border_color)
+        # Draw background
         graphik.drawRectangle(self.x, self.y, self.width, self.height, bg_color)
         
         # Draw button text
+        text_size = max(12, min(24, config.text_size // 2))
         graphik.drawText(
             self.text,
             self.x + self.width // 2,
             self.y + self.height // 2,
-            config.text_size // 2,
+            text_size,
             text_color
         )
+        
+        # Reset pressed state after animation
+        if self.pressed and current_time - self.click_time > 150:
+            self.pressed = False

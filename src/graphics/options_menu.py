@@ -20,6 +20,11 @@ class OptionsMenu:
         # Flags
         self.settings_changed = False
         
+        # Feedback message system
+        self.feedback_message = ""
+        self.feedback_color = None
+        self.feedback_time = 0
+        
         self.initialize_controls()
     
     def initialize_controls(self):
@@ -327,6 +332,9 @@ class OptionsMenu:
         self.settings_changed = False
         self.store_original_settings()  # Update original settings after apply
         
+        # Show feedback that settings were applied
+        self.show_feedback_message("Settings Applied!", self.config.green)
+        
         # Notify parent to update audio volumes if available
         self._notify_audio_update()
         
@@ -361,10 +369,19 @@ class OptionsMenu:
         self.resolution_dropdown.set_selected_index(res_index)
         
         self.settings_changed = False
+        
+        # Show feedback that changes were cancelled
+        self.show_feedback_message("Changes Cancelled", self.config.yellow)
     
     def go_back(self):
         """Go back to main menu"""
         return MenuState.MAIN_MENU
+    
+    def show_feedback_message(self, message, color):
+        """Show a temporary feedback message"""
+        self.feedback_message = message
+        self.feedback_color = color
+        self.feedback_time = pygame.time.get_ticks()
 
     def handle_key_down(self, key):
         """Handle keyboard input for options menu navigation"""
@@ -406,17 +423,27 @@ class OptionsMenu:
                     self.controls[self.current_control_index].focused = False
                 self.current_control_index = i
                 control.focused = True
-                self.settings_changed = True
                 
-                # Handle button clicks that return a state
-                if control == self.back_button:
-                    return MenuState.MAIN_MENU
+                # Handle button return values
+                if isinstance(control, Button):
+                    # For non-back buttons, mark settings as potentially changed
+                    if control != self.back_button:
+                        # Don't mark as changed for apply/cancel as they handle their own state
+                        pass
+                    # Check if the button callback returned a state
+                    if control.callback:
+                        result = control.callback()
+                        if result is not None:
+                            return result
+                else:
+                    # For other controls, mark settings as changed
+                    self.settings_changed = True
                 break
         
         return None
     
     def handle_mouse_motion(self, pos):
-        """Handle mouse motion for sliders"""
+        """Handle mouse motion for sliders and button hover effects"""
         for control in self.controls:
             if hasattr(control, 'handle_mouse_motion'):
                 control.handle_mouse_motion(pos)
@@ -529,6 +556,22 @@ class OptionsMenu:
                 instruction_size,
                 self.config.yellow
             )
+        
+        # Draw feedback message if active
+        current_time = pygame.time.get_ticks()
+        if (self.feedback_message and 
+            current_time - self.feedback_time < 2000):  # Show for 2 seconds
+            feedback_y = instructions_y + (50 if self.settings_changed else 25)
+            self.graphik.drawText(
+                self.feedback_message,
+                current_width // 2,
+                feedback_y,
+                instruction_size,
+                self.feedback_color
+            )
+        elif current_time - self.feedback_time >= 2000:
+            # Clear feedback message after timeout
+            self.feedback_message = ""
     
     def set_audio_update_callback(self, callback):
         """Set callback function to notify when audio settings change"""
