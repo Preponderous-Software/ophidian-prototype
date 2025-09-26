@@ -100,12 +100,6 @@ class OptionsMenu:
         )
         self.controls.append(self.cancel_button)
         
-        self.back_button = Button(
-            0, 0, 80, 40,  # Position will be set dynamically
-            "Back", self.go_back
-        )
-        self.controls.append(self.back_button)
-        
         # Set initial focus
         if self.controls:
             self.controls[0].focused = True
@@ -286,15 +280,6 @@ class OptionsMenu:
         self.cancel_button.rect.width = button_width
         self.cancel_button.rect.height = button_height
         
-        self.back_button.x = button_start_x + (button_width + button_spacing) * 2
-        self.back_button.y = button_y
-        self.back_button.width = button_width
-        self.back_button.height = button_height
-        self.back_button.rect.x = button_start_x + (button_width + button_spacing) * 2
-        self.back_button.rect.y = button_y
-        self.back_button.rect.width = button_width
-        self.back_button.rect.height = button_height
-        
         # Store original settings for cancel functionality
         self.store_original_settings()
     
@@ -372,10 +357,6 @@ class OptionsMenu:
         
         # Show feedback that changes were cancelled
         self.show_feedback_message("Changes Cancelled", self.config.yellow)
-    
-    def go_back(self):
-        """Go back to main menu"""
-        return MenuState.MAIN_MENU
     
     def show_feedback_message(self, message, color):
         """Show a temporary feedback message"""

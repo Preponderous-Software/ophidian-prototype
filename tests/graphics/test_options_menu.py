@@ -82,22 +82,12 @@ class TestOptionsMenu(unittest.TestCase):
         self.assertIsNone(result)
         self.assertNotEqual(initial_index, menu.current_control_index)
 
-    def test_handle_mouse_click_on_back_button(self):
-        """Test mouse click on back button returns to main menu"""
+    def test_handle_key_down_escape_returns_to_main_menu(self):
+        """Test that ESC key returns to main menu (replaces back button functionality)"""
         menu = OptionsMenu(self.mock_config, self.mock_display)
         
-        # Find the back button position
-        back_button = None
-        for control in menu.controls:
-            if hasattr(control, 'text') and control.text == "Back":
-                back_button = control
-                break
-        
-        self.assertIsNotNone(back_button)
-        
-        # Click on the back button
-        click_pos = (back_button.x + back_button.width//2, back_button.y + back_button.height//2)
-        result = menu.handle_mouse_click(click_pos)
+        # Test ESC key returns to main menu
+        result = menu.handle_key_down(pygame.K_ESCAPE)
         self.assertEqual(result, MenuState.MAIN_MENU)
 
     def test_apply_settings(self):
