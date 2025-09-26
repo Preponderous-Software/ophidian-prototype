@@ -32,6 +32,9 @@ class Ophidian:
         self.state_repository = GameStateRepository()
         self.config = Config()
         
+        # Track current window size for persistence
+        self.current_window_size = (self.config.display_width, self.config.display_height)
+        
         # Initialize display for menu
         self.game_display = self.initialize_game_display()
         
@@ -43,7 +46,7 @@ class Ophidian:
         
         pygame.display.set_caption("Ophidian")
         
-        # Initialize menu systems
+        # Initialize menu systems with current window size
         self.main_menu = MainMenu(self.config, self.game_display)
         self.options_menu = OptionsMenu(self.config, self.game_display)
         self.high_scores_menu = HighScoresMenu(self.config, self.game_display)
@@ -60,14 +63,14 @@ class Ophidian:
         self.selected_snake_part = None
 
     def initialize_game_display(self):
-        """Initialize the game display"""
+        """Initialize the game display using current window size"""
         if self.config.fullscreen:
             return pygame.display.set_mode(
-                (self.config.display_width, self.config.display_height), pygame.FULLSCREEN
+                self.current_window_size, pygame.FULLSCREEN
             )
         else:
             return pygame.display.set_mode(
-                (self.config.display_width, self.config.display_height), pygame.RESIZABLE
+                self.current_window_size, pygame.RESIZABLE
             )
 
     def initialize_game(self):
@@ -174,8 +177,12 @@ class Ophidian:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_mouse_click_based_on_state(event.pos)
                 elif event.type == pygame.WINDOWRESIZED:
+                    # Update current window size for all states
+                    self.current_window_size = self.game_display.get_size()
+                    
                     if self.current_state == MenuState.GAME and self.renderer:
                         self.renderer.initialize_location_width_and_height()
+                    # Menus will automatically adapt to new size in their draw methods
 
             # Handle different states
             if self.current_state == MenuState.MAIN_MENU:

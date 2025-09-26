@@ -21,14 +21,21 @@ class HighScoresMenu:
 
     def draw(self):
         """Draw the high scores menu"""
+        # Get current window size for dynamic rendering
+        try:
+            current_width, current_height = self.game_display.get_size()
+        except (AttributeError, ValueError):
+            # Fallback to config values for testing
+            current_width, current_height = self.config.display_width, self.config.display_height
+        
         # Clear screen with black background
         self.game_display.fill(self.config.black)
         
         # Draw title
         self.graphik.drawText(
             "HIGH SCORES",
-            self.config.display_width // 2,
-            self.config.display_height // 2 - 100,
+            current_width // 2,
+            current_height // 2 - 100,
             self.config.text_size,
             self.config.green
         )
@@ -36,8 +43,8 @@ class HighScoresMenu:
         # Draw placeholder text
         self.graphik.drawText(
             "High scores coming soon...",
-            self.config.display_width // 2,
-            self.config.display_height // 2,
+            current_width // 2,
+            current_height // 2,
             self.config.text_size // 2,
             self.config.white
         )
@@ -45,8 +52,8 @@ class HighScoresMenu:
         # Draw instructions
         self.graphik.drawText(
             "Press ESC or ENTER to return to main menu",
-            self.config.display_width // 2,
-            self.config.display_height // 2 + 100,
+            current_width // 2,
+            current_height // 2 + 100,
             self.config.text_size // 3,
             self.config.yellow
         )
