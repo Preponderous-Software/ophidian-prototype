@@ -55,7 +55,7 @@ class PowerUp(Entity):
         """Get the type of this power-up."""
         return self.power_up_type
 
-    def get_color(self):
+    def getColor(self):
         """Get the color of this power-up."""
         return self.color
 

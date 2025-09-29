@@ -18,7 +18,7 @@ class TestPowerUp(unittest.TestCase):
 
         self.assertEqual(power_up.get_power_up_type(), PowerUpType.SPEED_BOOST)
         self.assertEqual(power_up.get_duration(), 10.0)
-        self.assertEqual(power_up.get_color(), (255, 255, 0))
+        self.assertEqual(power_up.getColor(), (255, 255, 0))
         self.assertFalse(power_up.is_active())
         self.assertEqual(power_up.get_remaining_time(), 0.0)
 
@@ -30,7 +30,7 @@ class TestPowerUp(unittest.TestCase):
 
         self.assertEqual(power_up.get_power_up_type(), PowerUpType.INVINCIBILITY)
         self.assertEqual(power_up.get_duration(), duration)
-        self.assertEqual(power_up.get_color(), color)
+        self.assertEqual(power_up.getColor(), color)
 
     def test_powerup_activation(self):
         """Test PowerUp activation."""

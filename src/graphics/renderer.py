@@ -189,7 +189,7 @@ class Renderer:
         for i, power_up in enumerate(active_power_ups):
             remaining_time = power_up.get_remaining_time()
             power_up_name = power_up.get_power_up_type().value
-            power_up_color = power_up.get_color()
+            power_up_color = power_up.getColor()
 
             # Create text showing power-up name and remaining time
             text = f"{power_up_name}: {remaining_time:.1f}s"
