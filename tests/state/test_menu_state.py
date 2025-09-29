@@ -20,7 +20,7 @@ class TestMenuState(unittest.TestCase):
             MenuState.OPTIONS,
             MenuState.HIGH_SCORES,
             MenuState.GAME,
-            MenuState.EXIT
+            MenuState.EXIT,
         }
         actual_states = set(MenuState)
         self.assertEqual(actual_states, expected_states)
@@ -31,5 +31,5 @@ class TestMenuState(unittest.TestCase):
         self.assertNotEqual(MenuState.MAIN_MENU, MenuState.GAME)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

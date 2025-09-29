@@ -5,7 +5,7 @@ import random
 # @since August 6th, 2022
 class SnakeColorGenerator:
     """Generator for creating varying shades of green for snake parts."""
-    
+
     @staticmethod
     def generate_green_shade():
         """Generate a random shade of green for snake parts."""

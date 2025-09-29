@@ -3,7 +3,9 @@ import unittest
 from unittest.mock import MagicMock
 
 from src.config.config import Config
-from src.environment.pyEnvLibEnvironmentRepositoryImpl import PyEnvLibEnvironmentRepositoryImpl
+from src.environment.pyEnvLibEnvironmentRepositoryImpl import (
+    PyEnvLibEnvironmentRepositoryImpl,
+)
 from src.lib.pyenvlib.entity import Entity
 from src.lib.pyenvlib.location import Location
 from src.snake.snakePart import SnakePart
@@ -17,7 +19,9 @@ class TestPyEnvLibEnvironmentRepositoryImpl(unittest.TestCase):
         self.mock_config.restart_upon_collision = True
         self.mock_config.initial_grid_size = 5
         self.mock_snake_part_repository = MagicMock(spec=SnakePartRepository)
-        self.repository = PyEnvLibEnvironmentRepositoryImpl(1, self.mock_config, self.mock_snake_part_repository)
+        self.repository = PyEnvLibEnvironmentRepositoryImpl(
+            1, self.mock_config, self.mock_snake_part_repository
+        )
 
     def test_get_rows(self):
         # Arrange
@@ -79,7 +83,9 @@ class TestPyEnvLibEnvironmentRepositoryImpl(unittest.TestCase):
 
         # Assert
         self.assertEqual(location, mock_location)
-        self.repository.environment.getGrid().getLocation.assert_called_once_with("location_id")
+        self.repository.environment.getGrid().getLocation.assert_called_once_with(
+            "location_id"
+        )
 
     def test_add_entity_to_random_location(self):
         # Arrange
@@ -92,7 +98,9 @@ class TestPyEnvLibEnvironmentRepositoryImpl(unittest.TestCase):
         self.repository.add_entity_to_random_location(mock_snake_part)
 
         # Assert
-        self.repository.add_entity_to_location.assert_called_once_with(mock_snake_part, random_location)
+        self.repository.add_entity_to_location.assert_called_once_with(
+            mock_snake_part, random_location
+        )
 
     def test_add_entity_to_location(self):
         # Arrange
@@ -104,7 +112,9 @@ class TestPyEnvLibEnvironmentRepositoryImpl(unittest.TestCase):
         self.repository.add_entity_to_location(entity, location)
 
         # Assert
-        self.repository.environment.addEntityToLocation.assert_called_once_with(entity, location)
+        self.repository.environment.addEntityToLocation.assert_called_once_with(
+            entity, location
+        )
 
     def test_remove_entity_from_location(self):
         # Arrange
@@ -124,7 +134,7 @@ class TestPyEnvLibEnvironmentRepositoryImpl(unittest.TestCase):
         # Arrange
         random_location = MagicMock(spec=Location)
         random_location.getNumEntities.return_value = 0
-        food_mock = MagicMock()
+        MagicMock()
         self.repository.get_random_location = MagicMock(return_value=random_location)
         self.repository.add_entity_to_location = MagicMock()
 

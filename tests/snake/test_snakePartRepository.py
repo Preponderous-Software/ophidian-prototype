@@ -52,5 +52,5 @@ class TestSnakePartRepository(unittest.TestCase):
         self.assertEqual(self.repository.snake_parts, [])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

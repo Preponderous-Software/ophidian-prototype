@@ -5,6 +5,7 @@ import json
 import os
 import pygame
 
+
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
 class Config:
@@ -36,84 +37,85 @@ class Config:
 
         # difficulty settings
         self.difficulty = "Normal"  # Easy, Normal, Hard
-        
+
         # key bindings
         self.key_bindings = {
-            'move_up': pygame.K_w,
-            'move_down': pygame.K_s,
-            'move_left': pygame.K_a,
-            'move_right': pygame.K_d,
-            'fullscreen': pygame.K_F11,
-            'restart': pygame.K_r,
-            'quit': pygame.K_q
+            "move_up": pygame.K_w,
+            "move_down": pygame.K_s,
+            "move_left": pygame.K_a,
+            "move_right": pygame.K_d,
+            "fullscreen": pygame.K_F11,
+            "restart": pygame.K_r,
+            "quit": pygame.K_q,
         }
 
         # misc
         self.debug = False
         self.restart_upon_collision = True
         self.level_progress_percentage_required = 0.25
-        
+
         # Load saved settings
         self.load_settings()
 
     def get_available_resolutions(self):
         """Get available display resolutions"""
-        return [
-            (500, 500),
-            (800, 600),
-            (1024, 768),
-            (1280, 720),
-            (1920, 1080)
-        ]
-    
+        return [(500, 500), (800, 600), (1024, 768), (1280, 720), (1920, 1080)]
+
     def get_difficulty_levels(self):
         """Get available difficulty levels"""
         return ["Easy", "Normal", "Hard"]
-    
+
     def save_settings(self):
         """Save current settings to file"""
         settings = {
-            'display_width': self.display_width,
-            'display_height': self.display_height,
-            'fullscreen': self.fullscreen,
-            'master_volume': self.master_volume,
-            'music_volume': self.music_volume,
-            'sfx_volume': self.sfx_volume,
-            'limit_tick_speed': self.limit_tick_speed,
-            'tick_speed': self.tick_speed,
-            'difficulty': self.difficulty,
-            'initial_grid_size': self.initial_grid_size,
-            'level_progress_percentage_required': self.level_progress_percentage_required,
-            'key_bindings': self.key_bindings
+            "display_width": self.display_width,
+            "display_height": self.display_height,
+            "fullscreen": self.fullscreen,
+            "master_volume": self.master_volume,
+            "music_volume": self.music_volume,
+            "sfx_volume": self.sfx_volume,
+            "limit_tick_speed": self.limit_tick_speed,
+            "tick_speed": self.tick_speed,
+            "difficulty": self.difficulty,
+            "initial_grid_size": self.initial_grid_size,
+            "level_progress_percentage_required": self.level_progress_percentage_required,
+            "key_bindings": self.key_bindings,
         }
-        
+
         try:
-            os.makedirs('config', exist_ok=True)
-            with open('config/settings.json', 'w') as f:
+            os.makedirs("config", exist_ok=True)
+            with open("config/settings.json", "w") as f:
                 json.dump(settings, f, indent=2)
         except Exception as e:
             print(f"Warning: Could not save settings: {e}")
-    
+
     def load_settings(self):
         """Load settings from file"""
         try:
-            with open('config/settings.json', 'r') as f:
+            with open("config/settings.json", "r") as f:
                 settings = json.load(f)
-                
-            self.display_width = settings.get('display_width', self.display_width)
-            self.display_height = settings.get('display_height', self.display_height)
-            self.fullscreen = settings.get('fullscreen', self.fullscreen)
-            self.master_volume = settings.get('master_volume', self.master_volume)
-            self.music_volume = settings.get('music_volume', self.music_volume)
-            self.sfx_volume = settings.get('sfx_volume', self.sfx_volume)
-            self.limit_tick_speed = settings.get('limit_tick_speed', self.limit_tick_speed)
-            self.tick_speed = settings.get('tick_speed', self.tick_speed)
-            self.difficulty = settings.get('difficulty', self.difficulty)
-            self.initial_grid_size = settings.get('initial_grid_size', self.initial_grid_size)
-            self.level_progress_percentage_required = settings.get('level_progress_percentage_required', self.level_progress_percentage_required)
-            
+
+            self.display_width = settings.get("display_width", self.display_width)
+            self.display_height = settings.get("display_height", self.display_height)
+            self.fullscreen = settings.get("fullscreen", self.fullscreen)
+            self.master_volume = settings.get("master_volume", self.master_volume)
+            self.music_volume = settings.get("music_volume", self.music_volume)
+            self.sfx_volume = settings.get("sfx_volume", self.sfx_volume)
+            self.limit_tick_speed = settings.get(
+                "limit_tick_speed", self.limit_tick_speed
+            )
+            self.tick_speed = settings.get("tick_speed", self.tick_speed)
+            self.difficulty = settings.get("difficulty", self.difficulty)
+            self.initial_grid_size = settings.get(
+                "initial_grid_size", self.initial_grid_size
+            )
+            self.level_progress_percentage_required = settings.get(
+                "level_progress_percentage_required",
+                self.level_progress_percentage_required,
+            )
+
             # Load key bindings, ensuring they are valid pygame key constants
-            saved_bindings = settings.get('key_bindings', {})
+            saved_bindings = settings.get("key_bindings", {})
             for key, value in saved_bindings.items():
                 if key in self.key_bindings and isinstance(value, int):
                     self.key_bindings[key] = value

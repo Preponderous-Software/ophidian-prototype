@@ -28,7 +28,9 @@ class TestGameScore(unittest.TestCase):
         # Assert
         self.assertEqual(200, points)
         self.assertEqual(200, self.game_score.current_points)
-        self.assertEqual(0, self.game_score.cumulative_points)  # Cumulative should still be 0
+        self.assertEqual(
+            0, self.game_score.cumulative_points
+        )  # Cumulative should still be 0
 
     def test_reset(self):
         # Arrange
@@ -40,7 +42,9 @@ class TestGameScore(unittest.TestCase):
 
         # Assert
         self.assertEqual(self.game_score.current_points, 0)
-        self.assertEqual(self.game_score.cumulative_points, 500)  # Cumulative should not reset
+        self.assertEqual(
+            self.game_score.cumulative_points, 500
+        )  # Cumulative should not reset
 
     def test_level_complete(self):
         # Arrange
@@ -51,8 +55,12 @@ class TestGameScore(unittest.TestCase):
         self.game_score.level_complete()
 
         # Assert
-        self.assertEqual(self.game_score.current_points, 0)  # Current points should reset
-        self.assertEqual(self.game_score.cumulative_points, 600)  # Should add current to cumulative
+        self.assertEqual(
+            self.game_score.current_points, 0
+        )  # Current points should reset
+        self.assertEqual(
+            self.game_score.cumulative_points, 600
+        )  # Should add current to cumulative
 
     def test_display_stats(self):
         # Arrange
@@ -85,7 +93,9 @@ class TestGameScore(unittest.TestCase):
 
         # Assert
         self.assertEqual(self.game_score.current_points, 0)
-        self.assertEqual(self.game_score.cumulative_points, 400)  # Only two successful levels
+        self.assertEqual(
+            self.game_score.cumulative_points, 400
+        )  # Only two successful levels
 
 
 if __name__ == "__main__":

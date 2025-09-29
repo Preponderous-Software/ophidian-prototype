@@ -26,34 +26,37 @@ class HighScoresMenu:
             current_width, current_height = self.game_display.get_size()
         except (AttributeError, ValueError):
             # Fallback to config values for testing
-            current_width, current_height = self.config.display_width, self.config.display_height
-        
+            current_width, current_height = (
+                self.config.display_width,
+                self.config.display_height,
+            )
+
         # Clear screen with black background
         self.game_display.fill(self.config.black)
-        
+
         # Draw title
         self.graphik.drawText(
             "HIGH SCORES",
             current_width // 2,
             current_height // 2 - 100,
             self.config.text_size,
-            self.config.green
+            self.config.green,
         )
-        
+
         # Draw placeholder text
         self.graphik.drawText(
             "High scores coming soon...",
             current_width // 2,
             current_height // 2,
             self.config.text_size // 2,
-            self.config.white
+            self.config.white,
         )
-        
+
         # Draw instructions
         self.graphik.drawText(
             "Press ESC or ENTER to return to main menu",
             current_width // 2,
             current_height // 2 + 100,
             self.config.text_size // 3,
-            self.config.yellow
+            self.config.yellow,
         )

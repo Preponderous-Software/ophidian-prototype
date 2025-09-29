@@ -22,15 +22,15 @@ class MainMenu:
         self.graphik = Graphik(game_display)
         self.current_state = MenuState.MAIN_MENU
         self.selected_index = 0
-        
+
         # Menu items
         self.menu_items = [
             MenuItem("Play Game", MenuState.GAME),
             MenuItem("Options", MenuState.OPTIONS),
             MenuItem("High Scores", MenuState.HIGH_SCORES),
-            MenuItem("Exit", MenuState.EXIT)
+            MenuItem("Exit", MenuState.EXIT),
         ]
-        
+
         # Update selection
         self.update_selection()
 
@@ -51,7 +51,7 @@ class MainMenu:
             return self.menu_items[self.selected_index].action
         elif key == pygame.K_ESCAPE:
             return MenuState.EXIT
-        
+
         return None
 
     def handle_mouse_motion(self, pos):
@@ -61,15 +61,21 @@ class MainMenu:
             current_width, current_height = self.game_display.get_size()
         except (AttributeError, ValueError):
             # Fallback to config values for testing
-            current_width, current_height = self.config.display_width, self.config.display_height
-        
+            current_width, current_height = (
+                self.config.display_width,
+                self.config.display_height,
+            )
+
         menu_start_y = current_height // 2 - 50
-        
+
         for i, item in enumerate(self.menu_items):
             item_y = menu_start_y + i * 80
-            if (current_width // 2 - item.width // 2 <= x <= 
-                current_width // 2 + item.width // 2 and
-                item_y <= y <= item_y + item.height):
+            if (
+                current_width // 2 - item.width // 2
+                <= x
+                <= current_width // 2 + item.width // 2
+                and item_y <= y <= item_y + item.height
+            ):
                 if self.selected_index != i:
                     self.selected_index = i
                     self.update_selection()
@@ -82,17 +88,23 @@ class MainMenu:
             current_width, current_height = self.game_display.get_size()
         except (AttributeError, ValueError):
             # Fallback to config values for testing
-            current_width, current_height = self.config.display_width, self.config.display_height
-        
+            current_width, current_height = (
+                self.config.display_width,
+                self.config.display_height,
+            )
+
         menu_start_y = current_height // 2 - 50
-        
+
         for i, item in enumerate(self.menu_items):
             item_y = menu_start_y + i * 80
-            if (current_width // 2 - item.width // 2 <= x <= 
-                current_width // 2 + item.width // 2 and
-                item_y <= y <= item_y + item.height):
+            if (
+                current_width // 2 - item.width // 2
+                <= x
+                <= current_width // 2 + item.width // 2
+                and item_y <= y <= item_y + item.height
+            ):
                 return item.action
-        
+
         return None
 
     def draw(self):
@@ -102,11 +114,14 @@ class MainMenu:
             current_width, current_height = self.game_display.get_size()
         except (AttributeError, ValueError):
             # Fallback to config values for testing
-            current_width, current_height = self.config.display_width, self.config.display_height
-        
+            current_width, current_height = (
+                self.config.display_width,
+                self.config.display_height,
+            )
+
         # Clear screen with black background
         self.game_display.fill(self.config.black)
-        
+
         # Draw title
         title_y = current_height // 2 - 150
         self.graphik.drawText(
@@ -114,9 +129,9 @@ class MainMenu:
             current_width // 2,
             title_y,
             self.config.text_size + 20,
-            self.config.green
+            self.config.green,
         )
-        
+
         # Draw subtitle
         subtitle_y = title_y + 80
         self.graphik.drawText(
@@ -124,16 +139,16 @@ class MainMenu:
             current_width // 2,
             subtitle_y,
             self.config.text_size // 2,
-            self.config.white
+            self.config.white,
         )
-        
+
         # Draw menu items
         menu_start_y = current_height // 2 - 50
-        
+
         for i, item in enumerate(self.menu_items):
             item_x = current_width // 2 - item.width // 2
             item_y = menu_start_y + i * 80
-            
+
             # Choose colors based on selection
             if item.is_highlighted:
                 bg_color = self.config.green
@@ -141,18 +156,20 @@ class MainMenu:
             else:
                 bg_color = self.config.black
                 text_color = self.config.white
-            
+
             # Draw background rectangle for highlighted items
             if item.is_highlighted:
-                self.graphik.drawRectangle(item_x, item_y, item.width, item.height, bg_color)
-            
+                self.graphik.drawRectangle(
+                    item_x, item_y, item.width, item.height, bg_color
+                )
+
             # Draw text
             self.graphik.drawText(
                 item.text,
                 current_width // 2,
                 item_y + item.height // 2,
                 self.config.text_size // 2,
-                text_color
+                text_color,
             )
 
     def get_current_state(self):

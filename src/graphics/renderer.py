@@ -5,20 +5,28 @@ from src.lib.graphik.src.graphik import Graphik
 
 class Renderer:
 
-    def __init__(self, collision, config, environment_repository, snake_part_repository, game_score, game_display):
+    def __init__(
+        self,
+        collision,
+        config,
+        environment_repository,
+        snake_part_repository,
+        game_score,
+        game_display,
+    ):
         self.collision = collision
         self.config = config
         self.environment_repository = environment_repository
         self.snake_part_repository = snake_part_repository
         self.game_score = game_score
-        self.game_display = game_display  # Use the provided game display instead of creating new one
+        self.game_display = (
+            game_display  # Use the provided game display instead of creating new one
+        )
         self.graphik = Graphik(self.game_display)
         self.location_width = 0
         self.location_height = 0
         self.game_area_offset_x = 0
         self.game_area_offset_y = 0
-
-
 
     def draw(self):
         self.graphik.getGameDisplay().fill(self.config.white)
@@ -26,51 +34,67 @@ class Renderer:
         self.draw_environment()
         self.draw_progress_bar()
         self.draw_score()
+        self.draw_active_power_ups()
 
     def initialize_location_width_and_height(self):
         x, y = self.graphik.getGameDisplay().get_size()
-        
+
         # Calculate proportional scaling based on window height
         # Reserve space for progress bar (20 pixels) and score (50 pixels)
         available_height = y - 70
-        
+
         # Use the smaller dimension to maintain square grid cells
-        grid_size = max(self.environment_repository.get_rows(), self.environment_repository.get_columns())
+        grid_size = max(
+            self.environment_repository.get_rows(),
+            self.environment_repository.get_columns(),
+        )
         cell_size = available_height / grid_size
-        
+
         # Calculate the actual game area dimensions
         game_area_width = self.environment_repository.get_rows() * cell_size
-        game_area_height = self.environment_repository.get_columns() * cell_size
-        
+        self.environment_repository.get_columns() * cell_size
+
         # Center the game area horizontally
         self.game_area_offset_x = (x - game_area_width) / 2
         self.game_area_offset_y = 0  # Align to top, leaving space for UI at bottom
-        
+
         # Set uniform location dimensions for square cells
         self.location_width = cell_size
         self.location_height = cell_size
-    
+
     def draw_game_area_background(self):
         """Draw a distinct background for the game area to make it clearly visible"""
         # Calculate game area dimensions
         game_area_width = self.environment_repository.get_rows() * self.location_width
-        game_area_height = self.environment_repository.get_columns() * self.location_height
-        
+        game_area_height = (
+            self.environment_repository.get_columns() * self.location_height
+        )
+
         # Draw a subtle gray background for the game area
         light_gray = (240, 240, 240)
         pygame.draw.rect(
-            self.graphik.getGameDisplay(), 
-            light_gray, 
-            (self.game_area_offset_x, self.game_area_offset_y, game_area_width, game_area_height)
+            self.graphik.getGameDisplay(),
+            light_gray,
+            (
+                self.game_area_offset_x,
+                self.game_area_offset_y,
+                game_area_width,
+                game_area_height,
+            ),
         )
-        
+
         # Draw a border around the game area
         border_color = (200, 200, 200)
         pygame.draw.rect(
-            self.graphik.getGameDisplay(), 
-            border_color, 
-            (self.game_area_offset_x - 2, self.game_area_offset_y - 2, game_area_width + 4, game_area_height + 4), 
-            2
+            self.graphik.getGameDisplay(),
+            border_color,
+            (
+                self.game_area_offset_x - 2,
+                self.game_area_offset_y - 2,
+                game_area_width + 4,
+                game_area_height + 4,
+            ),
+            2,
         )
 
     # Draws the environment in its entirety.
@@ -107,11 +131,18 @@ class Renderer:
 
     def draw_progress_bar(self):
         x, y = self.graphik.getGameDisplay().get_size()
-        percentage = self.snake_part_repository.get_length() / self.environment_repository.get_num_locations()
-        pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20))
+        percentage = (
+            self.snake_part_repository.get_length()
+            / self.environment_repository.get_num_locations()
+        )
+        pygame.draw.rect(
+            self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20)
+        )
         if percentage < self.config.level_progress_percentage_required / 2:
             pygame.draw.rect(
-                self.graphik.getGameDisplay(), self.config.red, (0, y - 20, x * percentage, 20)
+                self.graphik.getGameDisplay(),
+                self.config.red,
+                (0, y - 20, x * percentage, 20),
             )
         elif percentage < self.config.level_progress_percentage_required:
             pygame.draw.rect(
@@ -121,22 +152,66 @@ class Renderer:
             )
         else:
             pygame.draw.rect(
-                self.graphik.getGameDisplay(), self.config.green, (0, y - 20, x * percentage, 20)
+                self.graphik.getGameDisplay(),
+                self.config.green,
+                (0, y - 20, x * percentage, 20),
             )
-        pygame.draw.rect(self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20), 1)
+        pygame.draw.rect(
+            self.graphik.getGameDisplay(), self.config.black, (0, y - 20, x, 20), 1
+        )
 
     def draw_score(self):
         black = (0, 0, 0)
-        score_text = str(self.game_score.current_points) + " | " + str(self.game_score.cumulative_points)
+        score_text = (
+            str(self.game_score.current_points)
+            + " | "
+            + str(self.game_score.cumulative_points)
+        )
         score_position = (
             self.graphik.getGameDisplay().get_size()[0] / 2,
             self.graphik.getGameDisplay().get_size()[1] - 50,
         )
         score_text_size = int(self.config.text_size / 2)
         self.graphik.drawText(
-            score_text,
-            score_position[0],
-            score_position[1],
-            score_text_size,
-            black
+            score_text, score_position[0], score_position[1], score_text_size, black
         )
+
+    def draw_active_power_ups(self):
+        """Draw visual indicators for active power-ups."""
+        active_power_ups = self.environment_repository.get_active_power_ups()
+        if not active_power_ups:
+            return
+
+        x, y = self.graphik.getGameDisplay().get_size()
+        start_y = y - 30  # Position above the score
+
+        # Draw each active power-up indicator
+        for i, power_up in enumerate(active_power_ups):
+            remaining_time = power_up.get_remaining_time()
+            power_up_name = power_up.get_power_up_type().value
+            power_up_color = power_up.get_color()
+
+            # Create text showing power-up name and remaining time
+            text = f"{power_up_name}: {remaining_time:.1f}s"
+            text_size = int(self.config.text_size / 3)
+
+            # Position power-ups horizontally across the screen
+            text_x = 150 + (i * 200)  # Spread them out
+            text_y = start_y
+
+            # Draw a small colored rectangle as an indicator
+            rect_width = 10
+            rect_height = 15
+            rect_x = text_x - 20
+            rect_y = text_y - rect_height // 2
+
+            pygame.draw.rect(
+                self.graphik.getGameDisplay(),
+                power_up_color,
+                (rect_x, rect_y, rect_width, rect_height),
+            )
+
+            # Draw the text
+            self.graphik.drawText(
+                text, text_x, text_y, text_size, (0, 0, 0)  # Black text
+            )

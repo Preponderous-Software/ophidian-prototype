@@ -8,22 +8,18 @@ class EnvironmentRepository(ABC):
     @abstractmethod
     def get_rows(self) -> int:
         """Returns the number of rows in the environment grid"""
-        pass
 
     @abstractmethod
     def get_columns(self) -> int:
         """Returns the number of columns in the environment grid"""
-        pass
 
     @abstractmethod
     def get_locations(self) -> list:
         """Returns all locations in the environment"""
-        pass
 
     @abstractmethod
     def get_location(self, x: int, y: int) -> Any:
         """Returns location at the specified coordinates"""
-        pass
 
     @abstractmethod
     def get_num_locations(self):
@@ -32,7 +28,6 @@ class EnvironmentRepository(ABC):
     @abstractmethod
     def get_location_of_entity(self, entity) -> Optional[Any]:
         """Returns the location of the specified entity"""
-        pass
 
     @abstractmethod
     def get_location_above_entity(self, entity):
@@ -61,7 +56,6 @@ class EnvironmentRepository(ABC):
     @abstractmethod
     def get_random_location(self) -> Any:
         """Returns a random location in the environment"""
-        pass
 
     @abstractmethod
     def add_entity_to_random_location(self, selectedSnakePart):
@@ -70,17 +64,14 @@ class EnvironmentRepository(ABC):
     @abstractmethod
     def add_entity_to_location(self, entity, location: Any) -> None:
         """Adds an entity to the specified location"""
-        pass
 
     @abstractmethod
     def remove_entity_from_location(self, entity) -> None:
         """Removes an entity from its current location"""
-        pass
 
     @abstractmethod
     def get_location_by_id(self, locationId):
         pass
-
 
     @abstractmethod
     def spawn_snake_part(self, snake_part, color):

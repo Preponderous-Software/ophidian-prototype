@@ -10,7 +10,9 @@ class TestKeyDownEventHandler(unittest.TestCase):
         self.config = MagicMock()
         self.game_display = MagicMock()
         self.selected_snake_part = MagicMock()
-        self.handler = KeyDownEventHandler(self.config, self.game_display, self.selected_snake_part)
+        self.handler = KeyDownEventHandler(
+            self.config, self.game_display, self.selected_snake_part
+        )
 
     def test_handle_key_down_event_quit(self):
         # Act
@@ -104,5 +106,5 @@ class TestKeyDownEventHandler(unittest.TestCase):
         self.assertEqual(result, "unknown")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

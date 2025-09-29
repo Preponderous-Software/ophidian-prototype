@@ -10,29 +10,34 @@ from src.food.food import Food
 from src.snake.snakePart import SnakePart
 from src.snake.snakeColorGenerator import SnakeColorGenerator
 from src.environment.environmentRepository import EnvironmentRepository
+from src.powerup.powerUp import PowerUp
+from src.powerup.powerUpType import PowerUpType
 
 from src.config.config import Config
 from src.snake.snakePartRepository import SnakePartRepository
 
 from src.lib.pyenvlib.location import Location
 
-log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger(__name__)
 
+
 class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
-    def __init__(self, level: int, config: Config, snake_part_repository: SnakePartRepository) -> None:
+    def __init__(
+        self, level: int, config: Config, snake_part_repository: SnakePartRepository
+    ) -> None:
         self.level = level
         self.config = config
         self.snake_part_repository = snake_part_repository
-        
+
         # Adjust game parameters based on difficulty
         base_grid_size = config.initial_grid_size
         if level == 1:
             grid_size = base_grid_size
         else:
             grid_size = base_grid_size + level
-            
+
         # Apply difficulty modifiers
         if config.difficulty == "Easy":
             # Larger grid = easier game
@@ -41,14 +46,20 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
             # Smaller grid = harder game (but ensure minimum of 4 for Hard)
             grid_size = max(4, int(grid_size * 0.7))
         # Normal difficulty uses default grid size
-        
-        logging.info(f"Initializing environment repository for level {level} with grid size {grid_size} (difficulty: {config.difficulty})")
-        self.environment = Environment(
-            "Level " + str(level), grid_size
+
+        logging.info(
+            f"Initializing environment repository for level {level} with grid size {grid_size} (difficulty: {config.difficulty})"
         )
+        self.environment = Environment("Level " + str(level), grid_size)
 
         self.collision = False
         self.running = True
+
+        # Power-up system
+        self.active_power_ups = []  # List of currently active power-ups
+        self.power_up_spawn_chance = (
+            0.05  # 5% chance to spawn power-up when food is eaten
+        )
 
     def get_rows(self) -> int:
         return self.environment.getGrid().getRows()
@@ -100,20 +111,22 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         return grid.getRight(current_location)
 
     def get_location_in_random_direction(self, location: Location) -> Location:
-        directions = ['up', 'down', 'left', 'right']
+        directions = ["up", "down", "left", "right"]
         direction = random.choice(directions)
-        if direction == 'up':
+        if direction == "up":
             return self.environment.getGrid().getUp(location)
-        elif direction == 'down':
+        elif direction == "down":
             return self.environment.getGrid().getDown(location)
-        elif direction == 'left':
+        elif direction == "left":
             return self.environment.getGrid().getLeft(location)
-        elif direction == 'right':
+        elif direction == "right":
             return self.environment.getGrid().getRight(location)
         else:
             raise ValueError("Invalid direction")
 
-    def get_location_in_direction_of_entity(self, param: int, snake_part: SnakePart) -> Optional[Location]:
+    def get_location_in_direction_of_entity(
+        self, param: int, snake_part: SnakePart
+    ) -> Optional[Location]:
         location_of_snake_part = self.get_location_of_entity(snake_part)
         if location_of_snake_part is None:
             return None
@@ -162,8 +175,15 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         location = self.get_location_of_entity(snake_part)
         while True:
             target_location = self.get_location_in_random_direction(location)
-            location_in_current_direction_of_snake_part = self.get_location_in_direction_of_entity(snake_part.getDirection(), snake_part)
-            if target_location != -1 and target_location != location_in_current_direction_of_snake_part:
+            location_in_current_direction_of_snake_part = (
+                self.get_location_in_direction_of_entity(
+                    snake_part.getDirection(), snake_part
+                )
+            )
+            if (
+                target_location != -1
+                and target_location != location_in_current_direction_of_snake_part
+            ):
                 break
 
         self.add_entity_to_location(new_snake_part, target_location)
@@ -186,6 +206,66 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
                 not_found = False
 
         self.add_entity_to_location(food, target_location)
+
+    def spawn_power_up(self) -> None:
+        """Spawn a random power-up at an empty location."""
+        # Choose a random power-up type
+        power_up_types = list(PowerUpType)
+        power_up_type = random.choice(power_up_types)
+
+        # Create power-up with type-specific properties
+        if power_up_type == PowerUpType.SPEED_BOOST:
+            color = (255, 165, 0)  # Orange
+            duration = 8.0
+        elif power_up_type == PowerUpType.SLOW_TIME:
+            color = (0, 191, 255)  # Blue
+            duration = 10.0
+        elif power_up_type == PowerUpType.INVINCIBILITY:
+            color = (255, 20, 147)  # Pink
+            duration = 5.0
+        elif power_up_type == PowerUpType.SCORE_MULTIPLIER:
+            color = (255, 215, 0)  # Gold
+            duration = 12.0
+        else:
+            color = (255, 255, 0)  # Yellow (default)
+            duration = 10.0
+
+        power_up = PowerUp(power_up_type, duration, color)
+
+        # Find an empty location to spawn the power-up
+        target_location = -1
+        not_found = True
+        attempts = 0
+        max_attempts = 100  # Prevent infinite loop
+
+        while not_found and attempts < max_attempts:
+            target_location = self.get_random_location()
+            if target_location.getNumEntities() == 0:
+                not_found = False
+            attempts += 1
+
+        if not not_found:  # Successfully found a location
+            self.add_entity_to_location(power_up, target_location)
+            logging.info(f"Spawned power-up: {power_up_type.value} at location")
+        else:
+            logging.warning("Could not find empty location to spawn power-up")
+
+    def update_power_ups(self) -> None:
+        """Update active power-ups and remove expired ones."""
+        expired_power_ups = []
+        for power_up in self.active_power_ups:
+            if power_up.is_expired():
+                expired_power_ups.append(power_up)
+                power_up.deactivate()
+
+        # Remove expired power-ups
+        for power_up in expired_power_ups:
+            self.active_power_ups.remove(power_up)
+            logging.info(f"Power-up expired: {power_up.get_power_up_type().value}")
+
+    def get_active_power_ups(self) -> list:
+        """Get list of currently active power-ups."""
+        return self.active_power_ups.copy()
 
     def move_entity(self, entity: Entity, direction: int) -> bool:
         check_for_level_progress_and_reinitialize = False
@@ -224,19 +304,40 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         if entity.hasPrevious():
             self.move_previous_snake_part(entity)
 
+        # Check for food collision
         food = -1
         for eid in new_location.getEntities():
             e = new_location.getEntity(eid)
             if type(e) is Food:
                 food = e
 
-        if food == -1:
-            return check_for_level_progress_and_reinitialize
+        # Check for power-up collision
+        power_up = -1
+        for eid in new_location.getEntities():
+            e = new_location.getEntity(eid)
+            if type(e) is PowerUp:
+                power_up = e
 
-        food_color = food.getColor()
-        self.remove_entity_from_location(food)
-        self.spawn_food()
-        self.spawn_snake_part(entity.getTail(), SnakeColorGenerator.generate_green_shade())
+        # Handle food consumption
+        if food != -1:
+            food.getColor()
+            self.remove_entity_from_location(food)
+            self.spawn_food()
+            self.spawn_snake_part(
+                entity.getTail(), SnakeColorGenerator.generate_green_shade()
+            )
+
+            # Randomly spawn power-up when food is eaten
+            if random.random() < self.power_up_spawn_chance:
+                self.spawn_power_up()
+
+        # Handle power-up collection
+        if power_up != -1:
+            power_up.activate()
+            self.active_power_ups.append(power_up)
+            self.remove_entity_from_location(power_up)
+            logging.info(f"Power-up collected: {power_up.get_power_up_type().value}")
+
         return check_for_level_progress_and_reinitialize
 
     def move_previous_snake_part(self, snake_part: SnakePart) -> None:
@@ -244,7 +345,9 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         previous_snake_part_location = self.get_location_of_entity(previous_snake_part)
 
         if previous_snake_part_location == -1:
-            logging.error("Error: A previous snake part's location was unexpectantly -1.")
+            logging.error(
+                "Error: A previous snake part's location was unexpectantly -1."
+            )
 
         target_location = snake_part.lastPosition
 
@@ -260,11 +363,18 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         for locationId in self.environment.getGrid().getLocations():
             location = self.environment.getGrid().getLocation(locationId)
             for entity in location.getEntities().values():
-                if isinstance(entity, SnakePart) or isinstance(entity, Food):
+                if (
+                    isinstance(entity, SnakePart)
+                    or isinstance(entity, Food)
+                    or isinstance(entity, PowerUp)
+                ):
                     entities_to_remove_from_environment.append(entity)
         for entity in entities_to_remove_from_environment:
             self.environment.removeEntity(entity)
         self.snake_part_repository.clear()
+
+        # Clear active power-ups
+        self.active_power_ups.clear()
 
     def reinitialize(self, level):
         self.level = level
@@ -275,9 +385,7 @@ class PyEnvLibEnvironmentRepositoryImpl(EnvironmentRepository):
         else:
             grid_size = self.config.initial_grid_size + self.level
 
-        self.environment = Environment(
-            "Level " + str(level), grid_size
-        )
+        self.environment = Environment("Level " + str(level), grid_size)
 
         self.collision = False
         self.running = True

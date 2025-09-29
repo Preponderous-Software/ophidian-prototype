@@ -1,9 +1,10 @@
 import logging
 import os
 
-log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
+log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger(__name__)
+
 
 class GameScore:
     def __init__(self, snake_part_repository, environment_repository):
