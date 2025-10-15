@@ -1,11 +1,9 @@
 import random
 import time
-import pygame
 from config.config import Config
 from lib.pyenvlib.entity import Entity
 from lib.pyenvlib.environment import Environment
 from food.food import Food
-from lib.graphik.src.graphik import Graphik
 from lib.pyenvlib.grid import Grid
 from lib.pyenvlib.location import Location
 from snake.snakePart import SnakePart
@@ -14,12 +12,26 @@ from snake.snakePart import SnakePart
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
 class Ophidian:
-    def __init__(self):
-        pygame.init()
+    def __init__(self, useTextUI=False):
         self.config = Config()
-        self.initializeGameDisplay()
-        pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
-        self.graphik = Graphik(self.gameDisplay)
+        self.config.useTextUI = useTextUI
+        
+        # Import pygame and graphik only if not using text UI
+        if not self.config.useTextUI:
+            import pygame
+            self.pygame = pygame
+            from lib.graphik.src.graphik import Graphik
+            
+            pygame.init()
+            self.initializeGameDisplay()
+            pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
+            self.graphik = Graphik(self.gameDisplay)
+        else:
+            from textui.textrenderer import TextRenderer
+            self.pygame = None
+            self.textRenderer = TextRenderer(self.config)
+            self.textRenderer.enableRawMode()
+        
         self.running = True
         self.snakeParts = []
         self.level = 1
@@ -30,22 +42,31 @@ class Ophidian:
         self.collision = False
 
     def initializeGameDisplay(self):
+        if self.config.useTextUI:
+            return  # No display needed for text UI
+        
         if self.config.fullscreen:
-            self.gameDisplay = pygame.display.set_mode(
-                (self.config.displayWidth, self.config.displayHeight), pygame.FULLSCREEN
+            self.gameDisplay = self.pygame.display.set_mode(
+                (self.config.displayWidth, self.config.displayHeight), self.pygame.FULLSCREEN
             )
         else:
-            self.gameDisplay = pygame.display.set_mode(
-                (self.config.displayWidth, self.config.displayHeight), pygame.RESIZABLE
+            self.gameDisplay = self.pygame.display.set_mode(
+                (self.config.displayWidth, self.config.displayHeight), self.pygame.RESIZABLE
             )
 
     def initializeLocationWidthAndHeight(self):
+        if self.config.useTextUI:
+            return  # Not needed for text UI
+        
         x, y = self.gameDisplay.get_size()
         self.locationWidth = x / self.environment.getGrid().getRows()
         self.locationHeight = y / self.environment.getGrid().getColumns()
 
     # Draws the environment in its entirety.
     def drawEnvironment(self):
+        if self.config.useTextUI:
+            return  # Rendering handled separately in text UI
+        
         for locationId in self.environment.getGrid().getLocations():
             location = self.environment.getGrid().getLocation(locationId)
             self.drawLocation(
@@ -107,7 +128,10 @@ class Ophidian:
 
     def quitApplication(self):
         self.displayStatsInConsole()
-        pygame.quit()
+        if self.config.useTextUI:
+            self.textRenderer.disableRawMode()
+        else:
+            self.pygame.quit()
         quit()
 
     def getLocation(self, entity: Entity):
@@ -145,8 +169,9 @@ class Ophidian:
                 # we have a collision
                 self.collision = True
                 print("The ophidian collides with itself and ceases to be.")
-                self.drawEnvironment()
-                pygame.display.update()
+                if not self.config.useTextUI:
+                    self.drawEnvironment()
+                    self.pygame.display.update()
                 time.sleep(self.config.tickSpeed * 20)
                 if self.config.restartUponCollision:
                     self.checkForLevelProgressAndReinitialize()
@@ -220,50 +245,88 @@ class Ophidian:
         self.removeEntityFromLocation(entity)
 
     def handleKeyDownEvent(self, key):
-        if key == pygame.K_q:
-            self.running = False
-        elif key == pygame.K_w or key == pygame.K_UP:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 2
-            ):
-                self.selectedSnakePart.setDirection(0)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_a or key == pygame.K_LEFT:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 3
-            ):
-                self.selectedSnakePart.setDirection(1)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_s or key == pygame.K_DOWN:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 0
-            ):
-                self.selectedSnakePart.setDirection(2)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_d or key == pygame.K_RIGHT:
-            if (
-                self.changedDirectionThisTick == False
-                and self.selectedSnakePart.getDirection() != 1
-            ):
-                self.selectedSnakePart.setDirection(3)
-                self.changedDirectionThisTick = True
-        elif key == pygame.K_F11:
-            if self.config.fullscreen:
-                self.config.fullscreen = False
-            else:
-                self.config.fullscreen = True
-            self.initializeGameDisplay()
-        elif key == pygame.K_l:
-            if self.config.limitTickSpeed:
-                self.config.limitTickSpeed = False
-            else:
-                self.config.limitTickSpeed = True
-        elif key == pygame.K_r:
-            self.checkForLevelProgressAndReinitialize()
-            return "restart"
+        # For text UI, key is a character; for pygame, it's a key code
+        if self.config.useTextUI:
+            # Text UI key handling
+            if key == 'q':
+                self.running = False
+            elif key == 'w' or key == '\x1b[A':  # w or up arrow
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 2
+                ):
+                    self.selectedSnakePart.setDirection(0)
+                    self.changedDirectionThisTick = True
+            elif key == 'a' or key == '\x1b[D':  # a or left arrow
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 3
+                ):
+                    self.selectedSnakePart.setDirection(1)
+                    self.changedDirectionThisTick = True
+            elif key == 's' or key == '\x1b[B':  # s or down arrow
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 0
+                ):
+                    self.selectedSnakePart.setDirection(2)
+                    self.changedDirectionThisTick = True
+            elif key == 'd' or key == '\x1b[C':  # d or right arrow
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 1
+                ):
+                    self.selectedSnakePart.setDirection(3)
+                    self.changedDirectionThisTick = True
+            elif key == 'r':
+                self.checkForLevelProgressAndReinitialize()
+                return "restart"
+        else:
+            # Pygame key handling
+            if key == self.pygame.K_q:
+                self.running = False
+            elif key == self.pygame.K_w or key == self.pygame.K_UP:
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 2
+                ):
+                    self.selectedSnakePart.setDirection(0)
+                    self.changedDirectionThisTick = True
+            elif key == self.pygame.K_a or key == self.pygame.K_LEFT:
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 3
+                ):
+                    self.selectedSnakePart.setDirection(1)
+                    self.changedDirectionThisTick = True
+            elif key == self.pygame.K_s or key == self.pygame.K_DOWN:
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 0
+                ):
+                    self.selectedSnakePart.setDirection(2)
+                    self.changedDirectionThisTick = True
+            elif key == self.pygame.K_d or key == self.pygame.K_RIGHT:
+                if (
+                    self.changedDirectionThisTick == False
+                    and self.selectedSnakePart.getDirection() != 1
+                ):
+                    self.selectedSnakePart.setDirection(3)
+                    self.changedDirectionThisTick = True
+            elif key == self.pygame.K_F11:
+                if self.config.fullscreen:
+                    self.config.fullscreen = False
+                else:
+                    self.config.fullscreen = True
+                self.initializeGameDisplay()
+            elif key == self.pygame.K_l:
+                if self.config.limitTickSpeed:
+                    self.config.limitTickSpeed = False
+                else:
+                    self.config.limitTickSpeed = True
+            elif key == self.pygame.K_r:
+                self.checkForLevelProgressAndReinitialize()
+                return "restart"
 
     def getRandomDirection(self, grid: Grid, location: Location):
         direction = random.randrange(0, 4)
@@ -346,7 +409,8 @@ class Ophidian:
                 "Level " + str(self.level), self.config.gridSize + (self.level - 1) * 2
             )
         self.initializeLocationWidthAndHeight()
-        pygame.display.set_caption("Ophidian - Level " + str(self.level))
+        if not self.config.useTextUI:
+            self.pygame.display.set_caption("Ophidian - Level " + str(self.level))
         self.selectedSnakePart = SnakePart(
             (
                 random.randrange(50, 200),
@@ -360,15 +424,61 @@ class Ophidian:
         self.spawnFood()
 
     def run(self):
+        if self.config.useTextUI:
+            self.runTextUI()
+        else:
+            self.runPygameUI()
+
+    def runTextUI(self):
+        """Run the game with text-based UI"""
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+            # Check for key press (non-blocking)
+            key = self.textRenderer.getKeyPress(timeout=0)
+            if key:
+                result = self.handleKeyDownEvent(key)
+                if result == "restart":
+                    continue
+
+            # Move snake based on direction
+            if self.selectedSnakePart.getDirection() == 0:
+                self.moveEntity(self.selectedSnakePart, 0)
+            elif self.selectedSnakePart.getDirection() == 1:
+                self.moveEntity(self.selectedSnakePart, 1)
+            elif self.selectedSnakePart.getDirection() == 2:
+                self.moveEntity(self.selectedSnakePart, 2)
+            elif self.selectedSnakePart.getDirection() == 3:
+                self.moveEntity(self.selectedSnakePart, 3)
+
+            # Render the game state
+            percentage = len(self.snakeParts) / len(
+                self.environment.grid.getLocations()
+            )
+            self.textRenderer.renderGrid(
+                self.environment, self.snakeParts, self.collision
+            )
+            self.textRenderer.renderStats(
+                self.level, len(self.snakeParts), self.score, percentage
+            )
+            self.textRenderer.renderControls()
+
+            if self.config.limitTickSpeed:
+                time.sleep(self.config.tickSpeed)
+                self.tick += 1
+                self.changedDirectionThisTick = False
+
+        self.quitApplication()
+
+    def runPygameUI(self):
+        """Run the game with pygame graphical UI"""
+        while self.running:
+            for event in self.pygame.event.get():
+                if event.type == self.pygame.QUIT:
                     self.quitApplication()
-                elif event.type == pygame.KEYDOWN:
+                elif event.type == self.pygame.KEYDOWN:
                     result = self.handleKeyDownEvent(event.key)
                     if result == "restart":
                         continue
-                elif event.type == pygame.WINDOWRESIZED:
+                elif event.type == self.pygame.WINDOWRESIZED:
                     self.initializeLocationWidthAndHeight()
 
             if self.selectedSnakePart.getDirection() == 0:
@@ -388,24 +498,24 @@ class Ophidian:
             percentage = len(self.snakeParts) / len(
                 self.environment.grid.getLocations()
             )
-            pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20))
+            self.pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20))
             if percentage < self.config.levelProgressPercentageRequired / 2:
-                pygame.draw.rect(
+                self.pygame.draw.rect(
                     self.gameDisplay, self.config.red, (0, y - 20, x * percentage, 20)
                 )
             elif percentage < self.config.levelProgressPercentageRequired:
-                pygame.draw.rect(
+                self.pygame.draw.rect(
                     self.gameDisplay,
                     self.config.yellow,
                     (0, y - 20, x * percentage, 20),
                 )
             else:
-                pygame.draw.rect(
+                self.pygame.draw.rect(
                     self.gameDisplay, self.config.green, (0, y - 20, x * percentage, 20)
                 )
-            pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20), 1)
+            self.pygame.draw.rect(self.gameDisplay, self.config.black, (0, y - 20, x, 20), 1)
 
-            pygame.display.update()
+            self.pygame.display.update()
 
             if self.config.limitTickSpeed:
                 time.sleep(self.config.tickSpeed)
@@ -415,5 +525,13 @@ class Ophidian:
         self.quitApplication()
 
 
-ophidian = Ophidian()
-ophidian.run()
+import argparse
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Ophidian - A snake game')
+    parser.add_argument('--text-ui', action='store_true', 
+                        help='Use text-based UI instead of graphical UI')
+    args = parser.parse_args()
+    
+    ophidian = Ophidian(useTextUI=args.text_ui)
+    ophidian.run()

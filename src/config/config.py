@@ -7,6 +7,7 @@
 class Config:
     def __init__(self):
         # display
+        self.useTextUI = False
         self.displayWidth = 500
         self.displayHeight = 500
         self.fullscreen = False
