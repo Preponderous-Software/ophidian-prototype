@@ -41,8 +41,8 @@ class TestTextRenderer(unittest.TestCase):
         mock_env_repo.get_columns.return_value = 5
         mock_env_repo.get_locations.return_value = []
         
-        # Set up mock snake repository
-        mock_snake_repo.get_all.return_value = []
+        # Set up mock snake repository with snake_parts attribute
+        mock_snake_repo.snake_parts = []
         
         # Test that render_grid doesn't crash with empty grid
         with patch('builtins.print'):

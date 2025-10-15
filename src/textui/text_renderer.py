@@ -34,7 +34,7 @@ class TextRenderer:
             display.append(['.'] * rows)
         
         # Mark snake parts
-        snake_parts = snake_part_repository.get_all()
+        snake_parts = snake_part_repository.snake_parts
         for snake_part in snake_parts:
             location = environment_repository.get_location_of_entity(snake_part)
             if location is not None:
