@@ -12,8 +12,9 @@ from snake.snakePart import SnakePart
 # @author Daniel McCoy Stephenson
 # @since August 6th, 2022
 class Ophidian:
-    def __init__(self):
+    def __init__(self, useTextUI=False):
         self.config = Config()
+        self.config.useTextUI = useTextUI
         
         # Import pygame and graphik only if not using text UI
         if not self.config.useTextUI:
@@ -532,13 +533,5 @@ if __name__ == "__main__":
                         help='Use text-based UI instead of graphical UI')
     args = parser.parse_args()
     
-    ophidian = Ophidian()
-    if args.text_ui:
-        ophidian.config.useTextUI = True
-        # Need to reinitialize renderer if changing after construction
-        from textui.textrenderer import TextRenderer
-        ophidian.textRenderer = TextRenderer(ophidian.config)
-        ophidian.textRenderer.enableRawMode()
-        ophidian.pygame = None
-    
+    ophidian = Ophidian(useTextUI=args.text_ui)
     ophidian.run()
