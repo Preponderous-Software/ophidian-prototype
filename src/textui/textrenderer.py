@@ -103,14 +103,39 @@ class TextRenderer:
         """
         Get a key press without blocking (non-blocking input)
         Returns the key pressed or None if no key was pressed
+        Handles arrow keys by reading full escape sequences
         """
         if os.name != 'nt':
             # Unix/Linux/Mac
             if select.select([sys.stdin], [], [], timeout)[0]:
-                return sys.stdin.read(1)
+                ch = sys.stdin.read(1)
+                # Check if this is the start of an escape sequence
+                if ch == '\x1b':
+                    # Try to read the rest of the arrow key sequence
+                    if select.select([sys.stdin], [], [], 0.01)[0]:
+                        ch2 = sys.stdin.read(1)
+                        if ch2 == '[':
+                            if select.select([sys.stdin], [], [], 0.01)[0]:
+                                ch3 = sys.stdin.read(1)
+                                # Return full escape sequence
+                                return '\x1b[' + ch3
+                    return ch
+                return ch
         else:
             # Windows - simpler approach for now
             import msvcrt
             if msvcrt.kbhit():
-                return msvcrt.getch().decode('utf-8')
+                ch = msvcrt.getch()
+                # Handle arrow keys on Windows
+                if ch in (b'\xe0', b'\x00'):
+                    ch2 = msvcrt.getch()
+                    # Map Windows arrow keys to escape sequences
+                    arrow_map = {
+                        b'H': '\x1b[A',  # Up
+                        b'P': '\x1b[B',  # Down
+                        b'M': '\x1b[C',  # Right
+                        b'K': '\x1b[D',  # Left
+                    }
+                    return arrow_map.get(ch2, ch2.decode('utf-8', errors='ignore'))
+                return ch.decode('utf-8', errors='ignore')
         return None
