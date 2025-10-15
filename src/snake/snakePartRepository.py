@@ -15,5 +15,5 @@ class SnakePartRepository:
         self.snake_parts.clear()
     
     def get_all(self):
-        """Return all snake parts"""
-        return self.snake_parts
+        """Return a copy of all snake parts"""
+        return list(self.snake_parts)
