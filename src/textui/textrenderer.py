@@ -4,6 +4,12 @@ import termios
 import tty
 import select
 
+# Windows-specific import
+try:
+    import msvcrt
+except ImportError:
+    msvcrt = None
+
 
 # @author Daniel McCoy Stephenson
 # @since October 15th, 2025
@@ -122,9 +128,8 @@ class TextRenderer:
                     return ch
                 return ch
         else:
-            # Windows - simpler approach for now
-            import msvcrt
-            if msvcrt.kbhit():
+            # Windows
+            if msvcrt and msvcrt.kbhit():
                 ch = msvcrt.getch()
                 # Handle arrow keys on Windows
                 if ch in (b'\xe0', b'\x00'):
