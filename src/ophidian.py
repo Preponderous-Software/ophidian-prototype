@@ -343,7 +343,7 @@ class Ophidian:
                     self.changed_direction_this_tick = True
             elif key in ('a', 'A', '\x1b[D'):  # Left
                 if not self.changed_direction_this_tick:
-                    self.selected_snake_part.setDirection(3)
+                    self.selected_snake_part.setDirection(1)
                     self.changed_direction_this_tick = True
             elif key in ('s', 'S', '\x1b[B'):  # Down
                 if not self.changed_direction_this_tick:
@@ -351,7 +351,7 @@ class Ophidian:
                     self.changed_direction_this_tick = True
             elif key in ('d', 'D', '\x1b[C'):  # Right
                 if not self.changed_direction_this_tick:
-                    self.selected_snake_part.setDirection(1)
+                    self.selected_snake_part.setDirection(3)
                     self.changed_direction_this_tick = True
             elif key in ('r', 'R'):  # Restart
                 logging.info("Restarting the game...")
