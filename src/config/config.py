@@ -9,6 +9,9 @@ import pygame
 # @since August 6th, 2022
 class Config:
     def __init__(self):
+        # UI mode
+        self.use_text_ui = False
+        
         # display
         self.display_width = 500
         self.display_height = 500
@@ -73,6 +76,7 @@ class Config:
     def save_settings(self):
         """Save current settings to file"""
         settings = {
+            'use_text_ui': self.use_text_ui,
             'display_width': self.display_width,
             'display_height': self.display_height,
             'fullscreen': self.fullscreen,
@@ -100,6 +104,7 @@ class Config:
             with open('config/settings.json', 'r') as f:
                 settings = json.load(f)
                 
+            self.use_text_ui = settings.get('use_text_ui', self.use_text_ui)
             self.display_width = settings.get('display_width', self.display_width)
             self.display_height = settings.get('display_height', self.display_height)
             self.fullscreen = settings.get('fullscreen', self.fullscreen)
