@@ -289,13 +289,6 @@ class Ophidian:
         if not self.use_text_ui:
             self.renderer.initialize_location_width_and_height()
             pygame.display.set_caption("Ophidian - Level " + str(self.level))
-        self.selected_snake_part = SnakePart(
-            SnakeColorGenerator.generate_green_shade()
-        )
-        self.environment_repository.add_entity_to_random_location(self.selected_snake_part)
-        self.snake_part_repository.append(self.selected_snake_part)
-        logging.info("The ophidian enters the world.")
-        self.environment_repository.spawn_food()
 
     def run(self):
         if self.use_text_ui:

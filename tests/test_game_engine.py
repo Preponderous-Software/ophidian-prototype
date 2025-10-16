@@ -231,6 +231,44 @@ class TestGameEngineIntegration(unittest.TestCase):
         
         # Tick should have incremented
         self.assertEqual(self.game_engine.tick, initial_tick + 5)
+    
+    def test_multiple_initializations_spawn_single_entities(self):
+        """Test that reinitializing doesn't create duplicate snakes or food"""
+        # First initialization (already done in setUp)
+        food_count_1 = self._count_food_entities()
+        snake_count_1 = self.game_engine.snake_part_repository.get_length()
+        
+        self.assertEqual(food_count_1, 1, "Should have exactly 1 food after first init")
+        self.assertEqual(snake_count_1, 1, "Should have exactly 1 snake part after first init")
+        
+        # Second initialization (simulating restart)
+        self.game_engine.initialize_game()
+        
+        food_count_2 = self._count_food_entities()
+        snake_count_2 = self.game_engine.snake_part_repository.get_length()
+        
+        self.assertEqual(food_count_2, 1, "Should have exactly 1 food after second init")
+        self.assertEqual(snake_count_2, 1, "Should have exactly 1 snake part after second init")
+        
+        # Third initialization for good measure
+        self.game_engine.initialize_game()
+        
+        food_count_3 = self._count_food_entities()
+        snake_count_3 = self.game_engine.snake_part_repository.get_length()
+        
+        self.assertEqual(food_count_3, 1, "Should have exactly 1 food after third init")
+        self.assertEqual(snake_count_3, 1, "Should have exactly 1 snake part after third init")
+    
+    def _count_food_entities(self):
+        """Helper method to count food entities in the environment"""
+        food_count = 0
+        for location_id in self.game_engine.environment_repository.get_locations():
+            location = self.game_engine.environment_repository.get_location_by_id(location_id)
+            for entity_id in location.getEntities():
+                entity = location.getEntity(entity_id)
+                if hasattr(entity, 'getName') and entity.getName() == "Food":
+                    food_count += 1
+        return food_count
 
 
 if __name__ == '__main__':
