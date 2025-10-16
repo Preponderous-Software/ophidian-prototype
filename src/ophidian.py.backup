@@ -20,13 +20,6 @@ from src.state.game_state_repository import GameStateRepository
 from src.state.menu_state import MenuState
 from src.audio.audio_manager import AudioManager
 
-# New abstractions for UI/Game decoupling
-from src.game_engine import GameEngine
-from src.input.input_handler import InputAction, DirectionMapper
-from src.input.text_ui_input_handler import TextUIInputHandler
-from src.input.gui_input_handler import GUIInputHandler
-from src.textui.text_ui_renderer import TextUIRenderer
-
 log_level = os.environ.get('LOG_LEVEL', 'INFO').upper()
 logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger(__name__)
@@ -42,135 +35,54 @@ class Ophidian:
         
         self.running = True
         self.current_state = MenuState.MAIN_MENU
+        self.state_repository = GameStateRepository()
         self.config = Config()
         self.config.use_text_ui = use_text_ui
-        
-        # Initialize game engine (UI-agnostic)
-        self.game_engine = GameEngine(self.config)
         
         # Track current window size for persistence
         self.current_window_size = (self.config.display_width, self.config.display_height)
         
-        # Initialize UI-specific components
+        # Initialize display for menu (only for GUI mode)
         if not self.use_text_ui:
-            self._initialize_gui()
+            self.game_display = self.initialize_game_display()
+            
+            # Set icon after display is initialized
+            try:
+                pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
+            except (pygame.error, FileNotFoundError):
+                pass  # Icon loading is optional
+            
+            pygame.display.set_caption("Ophidian")
+            
+            # Initialize menu systems with current window size
+            self.main_menu = MainMenu(self.config, self.game_display)
+            self.options_menu = OptionsMenu(self.config, self.game_display)
+            self.high_scores_menu = HighScoresMenu(self.config, self.game_display)
+            
+            # Initialize audio manager
+            self.audio_manager = AudioManager(self.config)
+            
+            # Set up audio update callback for options menu
+            self.options_menu.set_audio_update_callback(self.update_audio_settings)
+            self.options_menu.set_resolution_change_callback(self.handle_resolution_change)
         else:
-            self._initialize_text_ui()
+            # Text UI initialization
+            from src.textui.text_renderer import TextRenderer
+            self.text_renderer = TextRenderer(self.config)
+            self.text_renderer.enable_raw_mode()
+            self.text_menu_selected = 0
+            self.text_menu_options = ["Play Game", "Exit"]
         
-        # Deprecated attributes for backward compatibility
-        # These delegate to game_engine
-        self.state_repository = self.game_engine.state_repository
-    
-    def _initialize_gui(self):
-        """Initialize GUI-specific components"""
-        self.game_display = self.initialize_game_display()
-        
-        # Set icon after display is initialized
-        try:
-            pygame.display.set_icon(pygame.image.load("src/media/icon.PNG"))
-        except (pygame.error, FileNotFoundError):
-            pass  # Icon loading is optional
-        
-        pygame.display.set_caption("Ophidian")
-        
-        # Initialize menu systems with current window size
-        self.main_menu = MainMenu(self.config, self.game_display)
-        self.options_menu = OptionsMenu(self.config, self.game_display)
-        self.high_scores_menu = HighScoresMenu(self.config, self.game_display)
-        
-        # Initialize audio manager
-        self.audio_manager = AudioManager(self.config)
-        
-        # Set up audio update callback for options menu
-        self.options_menu.set_audio_update_callback(self.update_audio_settings)
-        self.options_menu.set_resolution_change_callback(self.handle_resolution_change)
-        
-        # GUI renderer (existing Renderer class)
+        # Game-related initialization (moved to initialize_game method)
+        self.level = 1
+        self.tick = 0
+        self.changed_direction_this_tick = False
+        self.collision = False
+        self.snake_part_repository = None
+        self.environment_repository = None
+        self.game_score = None
         self.renderer = None
-        
-        # GUI input handler
-        self.gui_input_handler = None
-    
-    def _initialize_text_ui(self):
-        """Initialize text UI-specific components"""
-        from src.textui.text_renderer import TextRenderer
-        text_renderer = TextRenderer(self.config)
-        text_renderer.enable_raw_mode()
-        
-        # Text UI renderer adapter
-        self.text_ui_renderer = TextUIRenderer(text_renderer)
-        
-        # Text UI input handler
-        self.text_input_handler = TextUIInputHandler(text_renderer)
-        
-        # Text menu state
-        self.text_menu_selected = 0
-        self.text_menu_options = ["Play Game", "Exit"]
-    
-    # Properties for backward compatibility - delegate to game_engine
-    @property
-    def level(self):
-        return self.game_engine.level
-    
-    @level.setter
-    def level(self, value):
-        self.game_engine.level = value
-    
-    @property
-    def tick(self):
-        return self.game_engine.tick
-    
-    @tick.setter
-    def tick(self, value):
-        self.game_engine.tick = value
-    
-    @property
-    def changed_direction_this_tick(self):
-        return self.game_engine.changed_direction_this_tick
-    
-    @changed_direction_this_tick.setter
-    def changed_direction_this_tick(self, value):
-        self.game_engine.changed_direction_this_tick = value
-    
-    @property
-    def collision(self):
-        return self.game_engine.collision
-    
-    @collision.setter
-    def collision(self, value):
-        self.game_engine.collision = value
-    
-    @property
-    def snake_part_repository(self):
-        return self.game_engine.snake_part_repository
-    
-    @snake_part_repository.setter
-    def snake_part_repository(self, value):
-        self.game_engine.snake_part_repository = value
-    
-    @property
-    def environment_repository(self):
-        return self.game_engine.environment_repository
-    
-    @environment_repository.setter
-    def environment_repository(self, value):
-        self.game_engine.environment_repository = value
-    
-    @property
-    def game_score(self):
-        return self.game_engine.game_score
-    
-    @game_score.setter
-    def game_score(self, value):
-        self.game_engine.game_score = value
-    
-    @property
-    def selected_snake_part(self):
-        return self.game_engine.selected_snake_part
-    
-    @selected_snake_part.setter
-    def selected_snake_part(self, value):
-        self.game_engine.selected_snake_part = value
+        self.selected_snake_part = None
 
     def initialize_game_display(self):
         """Initialize the game display using current window size"""
@@ -188,8 +100,32 @@ class Ophidian:
 
     def initialize_game(self):
         """Initialize the game state when starting to play"""
-        # Delegate to game engine
-        self.game_engine.initialize_game()
+        # Load saved state or use defaults
+        saved_state = self.state_repository.load()
+        if saved_state:
+            self.level = saved_state.level
+        else:
+            self.level = 1
+
+        self.tick = 0
+        self.changed_direction_this_tick = False
+        self.collision = False
+
+        self.snake_part_repository = SnakePartRepository()
+        self.environment_repository = PyEnvLibEnvironmentRepositoryImpl(
+            self.level,
+            self.config,
+            self.snake_part_repository
+        )
+        self.game_score = GameScore(self.snake_part_repository, self.environment_repository)
+        
+        # Load saved state or use defaults
+        if saved_state:
+            self.game_score.current_points = saved_state.current_score
+            self.game_score.cumulative_points = saved_state.cumulative_score
+        else:
+            self.game_score.current_points = 0
+            self.game_score.cumulative_points = 0
         
         # Only initialize renderer for GUI mode
         if not self.use_text_ui:
@@ -201,14 +137,18 @@ class Ophidian:
                 self.game_score,
                 self.game_display  # Pass the existing game display
             )
-            # Initialize GUI input handler with current snake part
-            self.gui_input_handler = GUIInputHandler(self.config, self.selected_snake_part)
         
         self.initialize()
 
     def save_game_state(self):
         """Save current game state"""
-        self.game_engine.save_game_state()
+        if self.game_score is not None:
+            state = {
+                'level': self.level,
+                'current_score': self.game_score.current_points,
+                'cumulative_score': self.game_score.cumulative_points
+            }
+            self.state_repository.save(state)
 
     def check_for_level_progress_and_reinitialize(self):
         logging.info("Checking for level progress...")
@@ -247,11 +187,9 @@ class Ophidian:
         if not self.use_text_ui and hasattr(self, 'audio_manager'):
             self.audio_manager.cleanup()
         
-        # Clean up input handlers
+        # Clean up text renderer (text mode only)
         if self.use_text_ui:
-            self.text_input_handler.cleanup()
-        elif hasattr(self, 'gui_input_handler') and self.gui_input_handler:
-            self.gui_input_handler.cleanup()
+            self.text_renderer.disable_raw_mode()
             
         if not self.use_text_ui:
             pygame.quit()
@@ -357,26 +295,23 @@ class Ophidian:
     
     def run_text_menu(self):
         """Run text-based menu"""
-        self.text_ui_renderer.render_menu(self.text_menu_options, self.text_menu_selected)
+        self.text_renderer.render_menu("Ophidian - Main Menu", self.text_menu_options, self.text_menu_selected)
         
         # Get key press with timeout
-        action = self.text_input_handler.get_input(timeout=0.1)
+        key = self.text_renderer.get_key_press(timeout=0.1)
         
-        if action != InputAction.NONE:
-            if action == InputAction.MOVE_UP:  # Up arrow
+        if key:
+            if key in ('w', 'W', '\x1b[A'):  # Up arrow
                 self.text_menu_selected = (self.text_menu_selected - 1) % len(self.text_menu_options)
-            elif action == InputAction.MOVE_DOWN:  # Down arrow
+            elif key in ('s', 'S', '\x1b[B'):  # Down arrow
                 self.text_menu_selected = (self.text_menu_selected + 1) % len(self.text_menu_options)
-            elif action == InputAction.QUIT:
-                self.current_state = MenuState.EXIT
-        
-        # Handle Enter key separately (not mapped to an action)
-        key = self.text_input_handler.text_renderer.get_key_press(timeout=0)
-        if key in ('\r', '\n'):  # Enter
-            if self.text_menu_options[self.text_menu_selected] == "Play Game":
-                self.current_state = MenuState.GAME
-                self.initialize_game()
-            elif self.text_menu_options[self.text_menu_selected] == "Exit":
+            elif key in ('\r', '\n'):  # Enter
+                if self.text_menu_options[self.text_menu_selected] == "Play Game":
+                    self.current_state = MenuState.GAME
+                    self.initialize_game()
+                elif self.text_menu_options[self.text_menu_selected] == "Exit":
+                    self.current_state = MenuState.EXIT
+            elif key in ('q', 'Q'):
                 self.current_state = MenuState.EXIT
     
     def run_text_game_loop(self):
@@ -384,33 +319,72 @@ class Ophidian:
         if not self.snake_part_repository or not self.environment_repository:
             return
         
-        # Render using abstraction
-        game_state = self.game_engine.get_game_state()
-        self.text_ui_renderer.render_game(game_state)
+        # Render the current state
+        self.text_renderer.render_grid(self.environment_repository, self.snake_part_repository, self.collision)
         
-        # Get input using abstraction
-        action = self.text_input_handler.get_input(
-            timeout=self.config.tick_speed if self.config.limit_tick_speed else 0.01
+        percentage = self.snake_part_repository.get_length() / self.environment_repository.get_num_locations()
+        self.text_renderer.render_stats(
+            self.level,
+            self.snake_part_repository.get_length(),
+            self.game_score.current_points,
+            self.game_score.cumulative_points,
+            percentage
         )
+        self.text_renderer.render_controls()
         
-        # Handle input actions
-        if action != InputAction.NONE:
-            if action in (InputAction.MOVE_UP, InputAction.MOVE_DOWN, 
-                         InputAction.MOVE_LEFT, InputAction.MOVE_RIGHT):
-                direction = DirectionMapper.action_to_direction(action)
-                self.game_engine.handle_direction_input(direction)
-            elif action == InputAction.RESTART:
-                self.game_engine.handle_restart()
-            elif action == InputAction.QUIT:
+        # Get key press with timeout
+        key = self.text_renderer.get_key_press(timeout=self.config.tick_speed if self.config.limit_tick_speed else 0.01)
+        
+        # Handle input
+        if key:
+            if key in ('w', 'W', '\x1b[A'):  # Up
+                if not self.changed_direction_this_tick:
+                    self.selected_snake_part.setDirection(0)
+                    self.changed_direction_this_tick = True
+            elif key in ('a', 'A', '\x1b[D'):  # Left
+                if not self.changed_direction_this_tick:
+                    self.selected_snake_part.setDirection(1)
+                    self.changed_direction_this_tick = True
+            elif key in ('s', 'S', '\x1b[B'):  # Down
+                if not self.changed_direction_this_tick:
+                    self.selected_snake_part.setDirection(2)
+                    self.changed_direction_this_tick = True
+            elif key in ('d', 'D', '\x1b[C'):  # Right
+                if not self.changed_direction_this_tick:
+                    self.selected_snake_part.setDirection(3)
+                    self.changed_direction_this_tick = True
+            elif key in ('r', 'R'):  # Restart
+                logging.info("Restarting the game...")
+                self.game_score.reset()
+                self.check_for_level_progress_and_reinitialize()
+            elif key in ('q', 'Q'):  # Quit
                 logging.info("Quiting the application...")
                 self.quit_application()
-            elif action == InputAction.MENU:
+            elif key == '\x1b':  # ESC - Return to menu
                 self.current_state = MenuState.MAIN_MENU
                 self.save_game_state()
                 return
         
-        # Update game state using engine
-        self.game_engine.update()
+        # Move the snake
+        check_for_level_progress_and_reinitialize = False
+        direction = self.selected_snake_part.getDirection()
+        if direction == 0:
+            check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 0)
+        elif direction == 1:
+            check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 1)
+        elif direction == 2:
+            check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 2)
+        elif direction == 3:
+            check_for_level_progress_and_reinitialize = self.environment_repository.move_entity(self.selected_snake_part, 3)
+
+        if check_for_level_progress_and_reinitialize:
+            self.check_for_level_progress_and_reinitialize()
+
+        self.game_score.calculate()
+        
+        if self.config.limit_tick_speed:
+            self.tick += 1
+            self.changed_direction_this_tick = False
 
     def handle_key_down_event_based_on_state(self, key):
         """Handle key down events based on current state"""
