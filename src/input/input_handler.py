@@ -13,6 +13,7 @@ class InputAction:
     RESTART = "restart"
     QUIT = "quit"
     MENU = "menu"
+    SELECT = "select"  # For menu selection (Enter key)
     NONE = "none"
 
 

@@ -32,6 +32,8 @@ class TextUIInputHandler(InputHandler):
             return InputAction.QUIT
         elif key == '\x1b':  # ESC - Return to menu
             return InputAction.MENU
+        elif key in ('\r', '\n'):  # Enter - Select
+            return InputAction.SELECT
         
         return InputAction.NONE
     

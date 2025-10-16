@@ -367,16 +367,13 @@ class Ophidian:
                 self.text_menu_selected = (self.text_menu_selected - 1) % len(self.text_menu_options)
             elif action == InputAction.MOVE_DOWN:  # Down arrow
                 self.text_menu_selected = (self.text_menu_selected + 1) % len(self.text_menu_options)
+            elif action == InputAction.SELECT:  # Enter key
+                if self.text_menu_options[self.text_menu_selected] == "Play Game":
+                    self.current_state = MenuState.GAME
+                    self.initialize_game()
+                elif self.text_menu_options[self.text_menu_selected] == "Exit":
+                    self.current_state = MenuState.EXIT
             elif action == InputAction.QUIT:
-                self.current_state = MenuState.EXIT
-        
-        # Handle Enter key separately (not mapped to an action)
-        key = self.text_input_handler.text_renderer.get_key_press(timeout=0)
-        if key in ('\r', '\n'):  # Enter
-            if self.text_menu_options[self.text_menu_selected] == "Play Game":
-                self.current_state = MenuState.GAME
-                self.initialize_game()
-            elif self.text_menu_options[self.text_menu_selected] == "Exit":
                 self.current_state = MenuState.EXIT
     
     def run_text_game_loop(self):
