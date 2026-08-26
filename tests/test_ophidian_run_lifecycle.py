@@ -187,6 +187,19 @@ def test_restart_records_the_run_before_reinitializing_the_board(tmp_path, monke
     assert len(game.snakeParts) == 1
 
 
+def test_restart_still_reinitializes_and_signals_restart(tmp_path, monkeypatch):
+    game = _makeGame(monkeypatch, tmp_path)
+    calls = []
+    monkeypatch.setattr(
+        game, "checkForLevelProgressAndReinitialize", lambda: calls.append("reinit")
+    )
+
+    result = game.handleKeyDownEvent("r")
+
+    assert calls == ["reinit"]
+    assert result == "restart"
+
+
 def test_ending_a_run_shows_that_run_s_score_on_the_obituary_screen(
     tmp_path, monkeypatch
 ):
@@ -206,16 +219,3 @@ def test_ending_a_run_shows_that_run_s_score_on_the_obituary_screen(
     joined = "\n".join(lines)
     assert "score of 4242" in joined
     assert "Highest score ever: 9999" in joined
-
-
-def test_restart_still_reinitializes_and_signals_restart(tmp_path, monkeypatch):
-    game = _makeGame(monkeypatch, tmp_path)
-    calls = []
-    monkeypatch.setattr(
-        game, "checkForLevelProgressAndReinitialize", lambda: calls.append("reinit")
-    )
-
-    result = game.handleKeyDownEvent("r")
-
-    assert calls == ["reinit"]
-    assert result == "restart"
