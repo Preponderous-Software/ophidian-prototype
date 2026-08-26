@@ -61,6 +61,7 @@ def test_format_obituary_lines_interpolates_fields_for_collision():
     assert "Noodle" in narrative
     assert "level 3" in narrative
     assert "length of 12" in narrative
+    assert "score of 789" in narrative
     assert "surviving 456 ticks" in narrative
     assert "colliding with itself" in narrative
 
@@ -82,10 +83,23 @@ def test_format_obituary_lines_falls_back_when_name_missing():
     assert "Unnamed Ophidian" in lines[1]
 
 
+def test_format_obituary_lines_reports_the_score_of_the_run_that_just_ended():
+    lines = formatObituaryLines(sampleObituary(score=1234))
+    assert "score of 1234" in lines[1]
+
+
+def test_format_obituary_lines_defaults_score_for_records_predating_it():
+    stale = sampleObituary()
+    del stale["score"]
+    lines = formatObituaryLines(stale)
+    assert "score of 0" in lines[1]
+
+
 def test_format_obituary_lines_handles_empty_dict():
     lines = formatObituaryLines({})
     assert lines[0] == "== Obituary =="
     assert "Unnamed Ophidian" in lines[1]
+    assert "score of 0" in lines[1]
     assert "unknown causes" in lines[1]
 
 
@@ -115,3 +129,12 @@ def test_format_obituary_screen_combines_both_sections_with_separator():
     joined = "\n".join(lines)
     assert "Noodle" in joined
     assert "Total runs: 7" in joined
+
+
+def test_format_obituary_screen_distinguishes_run_score_from_lifetime_best():
+    lines = formatObituaryScreen(
+        sampleObituary(score=789), sampleLifetimeStats(highestScore=999)
+    )
+    joined = "\n".join(lines)
+    assert "score of 789" in joined
+    assert "Highest score ever: 999" in joined

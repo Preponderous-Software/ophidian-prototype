@@ -1,5 +1,6 @@
 import time
 
+from progression.obituary import formatObituaryScreen
 from textui.textrenderer import TextRenderer
 
 from ophidian import Ophidian
@@ -184,6 +185,27 @@ def test_restart_records_the_run_before_reinitializing_the_board(tmp_path, monke
 
     assert game.saveManager.data["obituaries"][-1]["length"] == 6
     assert len(game.snakeParts) == 1
+
+
+def test_ending_a_run_shows_that_run_s_score_on_the_obituary_screen(
+    tmp_path, monkeypatch
+):
+    # regression test: the screen reported the lifetime best and never the
+    # score of the run just played (see issue #136). The lifetime best is
+    # seeded above the run's score so the run's number can't be satisfied by
+    # the chronicle line.
+    game = _makeGame(monkeypatch, tmp_path)
+    game.saveManager.data["lifetimeStats"]["highestScore"] = 9999
+    game.score = 4242
+
+    game.recordCurrentRun("collision")
+    lines = formatObituaryScreen(
+        game.lastObituary, game.saveManager.data["lifetimeStats"]
+    )
+
+    joined = "\n".join(lines)
+    assert "score of 4242" in joined
+    assert "Highest score ever: 9999" in joined
 
 
 def test_restart_still_reinitializes_and_signals_restart(tmp_path, monkeypatch):
