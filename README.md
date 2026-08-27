@@ -73,6 +73,9 @@ as long as the multiplier lasts.
 
 Note that the score resets at the start of each level, alongside the board.
 
+When a run ends, the score it finished on is reported in the obituary that both UIs
+show, alongside the all-time best in the chronicle printed beneath it.
+
 ## Controls
 Key | Action
 ------------ | -------------

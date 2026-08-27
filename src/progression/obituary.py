@@ -41,13 +41,21 @@ def formatObituaryLines(obituary):
     level = obituary.get("level", 1)
     length = obituary.get("length", 0)
     ticks = obituary.get("ticksSurvived", 0)
+    # obituaries written before score was recorded have no "score" key
+    score = obituary.get("score", 0)
     cause = causeOfDeathPhrase(obituary.get("causeOfDeath"))
 
     return [
         "== Obituary ==",
         "The ophidian {name} lived to level {level}, reaching a length of "
-        "{length}, surviving {ticks} ticks, before {cause}.".format(
-            name=name, level=level, length=length, ticks=ticks, cause=cause
+        "{length} and a score of {score}, surviving {ticks} ticks, before "
+        "{cause}.".format(
+            name=name,
+            level=level,
+            length=length,
+            score=score,
+            ticks=ticks,
+            cause=cause,
         ),
     ]
 
