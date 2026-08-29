@@ -1,4 +1,8 @@
+import pygame
+
 from conftest import regionHasNonBackgroundPixel
+
+from ophidian import OBITUARY_FONT_NAME, OBITUARY_FONT_SIZE
 
 
 def test_render_obituary_screen_draws_text_over_a_black_overlay(
@@ -22,6 +26,48 @@ def test_render_obituary_screen_draws_text_over_a_black_overlay(
     assert regionHasNonBackgroundPixel(
         surface, (0, height // 2 - 100, width, 200), game.config.black
     )
+
+
+def test_render_obituary_screen_draws_no_line_wider_than_the_window(
+    pygameGame, monkeypatch
+):
+    # regression case for issue #139: the narrative line rendered as one
+    # string is over twice the window's width, and graphik centres what it
+    # is given, so the ophidian's name and its cause of death were both
+    # clipped off the ends
+    game = pygameGame
+    monkeypatch.setattr("ophidian.time.sleep", lambda seconds: None)
+
+    drawnLines = []
+    originalDrawText = game.graphik.drawText
+
+    def recordDrawText(text, xpos, ypos, size, color):
+        drawnLines.append(text)
+        originalDrawText(text, xpos, ypos, size, color)
+
+    monkeypatch.setattr(game.graphik, "drawText", recordDrawText)
+
+    game.lastObituary = {
+        "name": "Jormungandr",
+        "level": 1,
+        "length": 2,
+        "ticksSurvived": 21,
+        "score": 18,
+        "causeOfDeath": "quit",
+    }
+    game.renderObituaryScreen()
+
+    width, _ = game.gameDisplay.get_size()
+    font = pygame.font.Font(OBITUARY_FONT_NAME, OBITUARY_FONT_SIZE)
+    assert drawnLines
+    for line in drawnLines:
+        assert font.size(line)[0] <= width
+
+    # the ends of the sentence - the ophidian's name and the last word of
+    # its cause of death - are the parts that used to be clipped away, and
+    # each is still drawn whole on some line
+    assert any("Jormungandr" in line for line in drawnLines)
+    assert any("hand." in line for line in drawnLines)
 
 
 def test_render_obituary_screen_is_a_noop_before_any_run_ends(pygameGame):
