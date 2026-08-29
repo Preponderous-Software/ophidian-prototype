@@ -5,8 +5,8 @@
 
 Graphik.drawText centres a whole string on the point it is given and neither
 wraps nor shrinks it, so a line wider than the window loses an equal share off
-both ends. The screens that draw player-facing prose (rather than short
-labels) wrap their lines through here first.
+both ends. The obituary screen - so far the only one that draws a whole
+sentence rather than short labels - wraps its lines through here first.
 
 Measuring is left to the caller as a `measureWidth(text) -> int` callable so
 the wrapping itself stays a pure function of text and numbers - the caller
