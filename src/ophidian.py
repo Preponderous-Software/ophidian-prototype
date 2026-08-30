@@ -46,6 +46,7 @@ from progression.ascension import (
 )
 from ui.banner import UiBanner
 from ui.shop_screen import PygameShopScreen
+from ui.text_wrap import wrapLinesToWidth
 from controls.keybindings import (
     ACTION_CYCLE_COSMETIC,
     ACTION_OPEN_SHOP,
@@ -70,6 +71,13 @@ from controls.keybindings import (
 POWER_UP_INDICATOR_ROW_HEIGHT = 24
 POWER_UP_INDICATOR_METER_WIDTH = 140
 POWER_UP_INDICATOR_METER_HEIGHT = 4
+
+# Type of the obituary screen's text, and the gutter left either side of it.
+# The font has to be named here as well as inside Graphik.drawText, because
+# the screen measures its lines with it before handing them over to be drawn.
+OBITUARY_FONT_NAME = "freesansbold.ttf"
+OBITUARY_FONT_SIZE = 18
+OBITUARY_SCREEN_MARGIN = 20
 
 
 # @author Daniel McCoy Stephenson
@@ -452,6 +460,15 @@ class Ophidian:
         gets its version either from renderCollisionFrame (a run that ended
         in a collision, where the epitaph belongs to the death frame) or
         from printObituaryToConsole (a run the player quit or restarted).
+
+        The narrative line is more than twice as wide as the window when it
+        is rendered as one string, and graphik centres it, so both ends -
+        the ophidian's name and its cause of death - used to be clipped away
+        (see issue #139). It is therefore wrapped to the window here, using
+        the font drawText will render it with. The wrapping lives here
+        rather than in formatObituaryScreen because the text UI shares that
+        formatting and has no pixel width to wrap against - its terminal
+        wraps for it.
         """
         if self.config.useTextUI or self.lastObituary is None:
             return
@@ -459,6 +476,12 @@ class Ophidian:
             self.lastObituary, self.saveManager.data["lifetimeStats"]
         )
         width, height = self.gameDisplay.get_size()
+        font = self.pygame.font.Font(OBITUARY_FONT_NAME, OBITUARY_FONT_SIZE)
+        lines = wrapLinesToWidth(
+            lines,
+            lambda text: font.size(text)[0],
+            width - 2 * OBITUARY_SCREEN_MARGIN,
+        )
         self.graphik.drawRectangle(0, 0, width, height, self.config.black)
         lineHeight = 24
         startY = height // 2 - (len(lines) * lineHeight) // 2
@@ -466,7 +489,11 @@ class Ophidian:
             if not line:
                 continue
             self.graphik.drawText(
-                line, width // 2, startY + index * lineHeight, 18, self.config.white
+                line,
+                width // 2,
+                startY + index * lineHeight,
+                OBITUARY_FONT_SIZE,
+                self.config.white,
             )
         self.pygame.display.update()
         time.sleep(1.5)
