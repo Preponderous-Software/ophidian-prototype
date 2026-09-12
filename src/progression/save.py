@@ -2,6 +2,8 @@ import json
 import os
 from datetime import datetime, timezone
 
+from reporting.usage import defaultUsageReportingSettings
+
 # @author Daniel McCoy Stephenson
 # @since July 4th, 2026
 
@@ -27,6 +29,8 @@ def defaultSaveData():
             "highestScore": 0,
         },
         "obituaries": [],
+        # where usage reporting is switched off - see reporting/usage.py
+        "usageReporting": defaultUsageReportingSettings(),
     }
 
 
@@ -54,6 +58,10 @@ class SaveManager:
 
     def __init__(self, path=None):
         self.path = path or DEFAULT_SAVE_PATH
+        # True until a save that already carries the usageReporting block is
+        # loaded: the game shows its one-time usage reporting notice while
+        # this is set, then saves, which clears it for every later start.
+        self.usageReportingNoticeDue = True
         self.data = self._load()
 
     def _load(self):
@@ -69,6 +77,13 @@ class SaveManager:
                     stats = defaultSaveData()["lifetimeStats"]
                     stats.update(loaded.get("lifetimeStats", {}))
                     data["lifetimeStats"] = stats
+                    # same for usageReporting, so a save holding only
+                    # {"enabled": false} keeps the default endpoint and key
+                    reporting = defaultUsageReportingSettings()
+                    if isinstance(loaded.get("usageReporting"), dict):
+                        reporting.update(loaded["usageReporting"])
+                    data["usageReporting"] = reporting
+                    self.usageReportingNoticeDue = "usageReporting" not in loaded
             except (json.JSONDecodeError, OSError):
                 pass
         return data

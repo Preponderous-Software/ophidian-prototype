@@ -2,6 +2,7 @@ import json
 import os
 
 from progression.save import SAVE_VERSION, SaveManager, defaultSaveData, migrateSaveData
+from reporting.usage import defaultUsageReportingSettings
 
 
 def test_new_save_uses_defaults(tmp_path):
@@ -98,3 +99,48 @@ def test_save_manager_stamps_version_on_a_save_file_missing_it(tmp_path):
 
     assert manager.data["version"] == SAVE_VERSION
     assert manager.data["currency"] == 7
+
+
+def test_new_save_carries_the_usage_reporting_block_and_owes_the_notice(tmp_path):
+    path = os.path.join(tmp_path, "save.json")
+    manager = SaveManager(path)
+
+    assert manager.data["usageReporting"] == defaultUsageReportingSettings()
+    assert manager.usageReportingNoticeDue is True
+
+    manager.save()
+    assert SaveManager(path).usageReportingNoticeDue is False
+
+
+def test_save_predating_usage_reporting_gets_the_defaults_and_owes_the_notice(
+    tmp_path,
+):
+    path = os.path.join(tmp_path, "save.json")
+    old = defaultSaveData()
+    del old["usageReporting"]
+    with open(path, "w") as f:
+        json.dump(old, f)
+
+    manager = SaveManager(path)
+
+    assert manager.data["usageReporting"] == defaultUsageReportingSettings()
+    assert manager.usageReportingNoticeDue is True
+
+
+def test_opt_out_survives_reload_and_keeps_the_default_endpoint_and_key(tmp_path):
+    path = os.path.join(tmp_path, "save.json")
+    manager = SaveManager(path)
+    manager.data["usageReporting"] = {"enabled": False}
+    manager.save()
+
+    reloaded = SaveManager(path)
+
+    assert reloaded.usageReportingNoticeDue is False
+    assert reloaded.data["usageReporting"]["enabled"] is False
+    assert (
+        reloaded.data["usageReporting"]["endpoint"]
+        == defaultUsageReportingSettings()["endpoint"]
+    )
+    assert (
+        reloaded.data["usageReporting"]["key"] == defaultUsageReportingSettings()["key"]
+    )
