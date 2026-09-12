@@ -44,6 +44,7 @@ from progression.ascension import (
     shouldAscend,
     applyAscension,
 )
+from reporting.usage import FIRST_RUN_NOTICE, createUsageReporter, startupTags
 from ui.banner import UiBanner
 from ui.shop_screen import PygameShopScreen
 from ui.text_wrap import wrapLinesToWidth
@@ -110,6 +111,7 @@ class Ophidian:
         if self.saveManager.data["ophidianName"] is None:
             self.saveManager.data["ophidianName"] = generateOphidianName()
             self.saveManager.save()
+        self.usageReporter = self.initializeUsageReporting()
         self.lastObituary = None
         self.running = True
         self.snakeParts = []
@@ -274,7 +276,28 @@ class Ophidian:
         self.recordCurrentRun("restart")
         self.checkForLevelProgressAndReinitialize()
 
+    def initializeUsageReporting(self):
+        """Builds the usage reporter from the save's usageReporting block and
+        reports that the game started.
+
+        The one-time notice goes out first, and only while the save predates
+        the block; saving right after is what stops it from showing again.
+        The reporter's report() returns at once and never raises, so this
+        runs on the main thread without a frame ever waiting on it, and the
+        "usageReporting": {"enabled": false} switch in save.json (the notice
+        says so) yields a client that does nothing at all.
+        """
+        if self.saveManager.usageReportingNoticeDue:
+            print(FIRST_RUN_NOTICE)
+            self.saveManager.save()
+        reporter = createUsageReporter(self.saveManager.data.get("usageReporting"))
+        reporter.report("startup", tags=startupTags())
+        return reporter
+
     def recordCurrentRun(self, causeOfDeath, presentedByRenderer=False):
+        # one run-ended event per run, however it ended; the cause is the
+        # only tag, and nothing about the player or the machine goes with it
+        self.usageReporter.report("run-ended", tags={"cause": causeOfDeath})
         # bank currency earned this run before folding it into lifetime stats;
         # recordRun() below calls saveManager.save() which persists both
         earnedCurrency = currencyEarnedForRun(len(self.snakeParts))
@@ -503,6 +526,9 @@ class Ophidian:
             self.recordCurrentRun("quit")
             self.renderObituaryScreen()
         self.displayStatsInConsole()
+        # gives a report still in flight a moment to finish; nothing waits
+        # on one that has not started
+        self.usageReporter.close()
         if self.config.useTextUI:
             self.textRenderer.disableRawMode()
         else:

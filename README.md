@@ -106,6 +106,34 @@ When a run ends in a collision, both UIs hold the board it ended on for a few se
 before the next one starts: the graphical UI turns it red and then shows the obituary,
 and the text UI prints a collision notice under the board, followed by the obituary.
 
+## Usage reporting
+Ophidian reports that it is being used to [trace](https://github.com/Stephenson-Software/trace),
+so that its maintainers can see the game is still played. It sends two kinds of event,
+and nothing else:
+
+Event | When | What it carries
+------------ | ------------- | -------------
+`startup` | the game starts | the program name (`ophidian`) and the version in `version.txt`
+`run-ended` | a run ends | how it ended: `collision`, `restart` or `quit`
+
+No usernames, hostnames, addresses, paths, save contents or scores are ever sent. Reporting
+happens on a background thread, never delays a frame, and never stops the game if the
+server is unreachable.
+
+Reporting is on by default. The first time the game starts it says so once on the console
+and writes a `usageReporting` block to `save.json` (created next to where the game is run):
+```json
+"usageReporting": {
+  "enabled": true,
+  "endpoint": "https://trace.danielstephenson.dev",
+  "key": "..."
+}
+```
+To turn it off, set `"enabled": false` there. `endpoint` is where events are posted and
+`key` identifies the game to the server; neither normally needs changing. The client itself
+is a vendored copy of [trace-client-python](https://github.com/Stephenson-Software/trace-client-python)
+at `src/lib/trace_client.py`, and the test suite never contacts the real server.
+
 ## Support
 You can find the support discord server [here](https://discord.gg/49J4RHQxhy).
 
